@@ -1,37 +1,51 @@
-#include "Enemy.h"
+ï»¿#include "Enemy.h"
 #include "Util/Util.h"
 #include "Engine/Engine.h"
 #include "Level/Level.h"
 #include "Actor/EnemyBullet.h"
 #include "Actor/EnemyDestroyEffect.h"
 
-Enemy::Enemy(const char* image, int yPosition)
+Enemy::Enemy(const char* image)
 	: super(image)
 {
-	// ·£´ı (¿À¸¥ÂÊ ¶Ç´Â ¿ŞÂÊÀ¸·Î ÀÌµ¿ÇÒÁö °áÁ¤).
+	// ëœë¤ (ì˜¤ë¥¸ìª½ ë˜ëŠ” ì™¼ìª½ìœ¼ë¡œ ì´ë™í• ì§€ ê²°ì •).
 	int random = Util::Random(1, 10);
 
-	if (random % 2 == 0)
+	if (random % 4 == 0)
 	{
-		// È­¸é ¿À¸¥ÂÊ¿¡¼­ »ı¼º. "(oOo)"
+		// í™”ë©´ ì˜¤ë¥¸ìª½ì—ì„œ ìƒì„±. "(oOo)"
 		direction = MoveDirection::Left;
-		xPosition = static_cast<float>(
+		xPos = static_cast<float>(
 			Engine::Get().GetWidth() - width - 1
 			);
 	}
+	else if (random % 4 == 1)
+	{
+		// í™”ë©´ ì™¼ìª½ì—ì„œ ìƒì„±.
+		direction = MoveDirection::Right;
+		xPos = 0.0f;
+	}
+	else if (random % 4 == 2)
+	{
+	    // í™”ë©´ ì•„ë˜ìª½ì—ì„œ ìƒì„±.
+	    direction = MoveDirection::Up;
+	    yPos = static_cast<float>(
+		Engine::Get().GetHeight() - height - 1
+		);;
+	}
 	else
 	{
-		// È­¸é ¿ŞÂÊ¿¡¼­ »ı¼º.
-		direction = MoveDirection::Right;
-		xPosition = 0.0f;
+	    // í™”ë©´ ìœ„ìª½ì—ì„œ ìƒì„±.
+	    direction = MoveDirection::Down;
+	    yPos = 0.0f;
 	}
 
-	// ÀÌµ¿ ¹æÇâ¿¡ µû¸¥ Àû À§Ä¡ ¼³Á¤.
+	// ì´ë™ ë°©í–¥ì— ë”°ë¥¸ ì  ìœ„ì¹˜ ì„¤ì •.
 	SetPosition(
-		Vector2(static_cast<int>(xPosition), yPosition)
+		Vector2(static_cast<int>(xPos), static_cast<int>(yPos))
 	);
 
-	// ¹ß»ç Å¸ÀÌ¸Ó ¸ñÇ¥ ½Ã°£ ¼³Á¤.
+	// ë°œì‚¬ íƒ€ì´ë¨¸ ëª©í‘œ ì‹œê°„ ì„¤ì •.
 	timer.SetTargetTime(Util::RandomRange(1.0f, 3.0f));
 }
 
@@ -43,54 +57,82 @@ void Enemy::Tick(float deltaTime)
 {
 	super::Tick(deltaTime);
 
-	// ÀÌµ¿ Ã³¸®.
-	float dir
-		= direction == MoveDirection::Left ? -1.0f : 1.0f;
-	xPosition = xPosition + moveSpeed * dir * deltaTime;
+	// ì´ë™ ì²˜ë¦¬.
+	float xDir = 0.f, yDir = 0.f;
+	if (direction == MoveDirection::Left)
+	    xDir = -1.f;
+	else if (direction == MoveDirection::Right)
+	    xDir = 1.f;
+	else if (direction == MoveDirection::Up)
+	    yDir = -1.f;
+	else
+	    yDir = 1.f;
+	//xDir = direction == MoveDirection::Left ? -1.0f : 0.0f;
+	//xDir = direction == MoveDirection::Right ? 1.0f : 0.0f;
+	xPos = xPos + moveSpeed * xDir * deltaTime;
 
-	// ÁÂÇ¥ °Ë»ç.
-	// È­¸é ¿ŞÂÊÀ» ¿ÏÀüÈ÷ ¹ş¾î³µÀ¸¸é.
-	if (xPosition + width < 0)
+	//yDir = direction == MoveDirection::Up ? -1.0f : 0.0f;
+	//yDir = direction == MoveDirection::Down ? 1.0f : 0.0f;
+	yPos = yPos + moveSpeed * yDir * deltaTime;
+
+	// ì¢Œí‘œ ê²€ì‚¬.
+	// í™”ë©´ ì™¼ìª½ì„ ì™„ì „íˆ ë²—ì–´ë‚¬ìœ¼ë©´.
+	if (xPos + width < 0)
 	{
 		Destroy();
 		return;
 	}
 
-	// È­¸é ¿À¸¥ÂÊÀ» ¿ÏÀüÈ÷ ¹ş¾î³µÀ¸¸é.
-	if (xPosition > Engine::Get().GetWidth() - 1)
+	// í™”ë©´ ì˜¤ë¥¸ìª½ì„ ì™„ì „íˆ ë²—ì–´ë‚¬ìœ¼ë©´.
+	if (xPos > Engine::Get().GetWidth() - 1)
 	{
 		Destroy();
 		return;
 	}
 
-	// À§Ä¡ ¼³Á¤.
+	// í™”ë©´ ìœ„ìª½ì„ ì™„ì „íˆ ë²—ì–´ë‚¬ìœ¼ë©´.
+	if (yPos + height < 0)
+	{
+	    Destroy();
+	    return;
+	}
+
+	// í™”ë©´ ì•„ë˜ìª½ì„ ì™„ì „íˆ ë²—ì–´ë‚¬ìœ¼ë©´.
+	if (yPos > Engine::Get().GetHeight() - 1)
+	{
+	    Destroy();
+	    return;
+	}
+
+
+	// ìœ„ì¹˜ ì„¤ì •.
 	SetPosition(Vector2(
-		static_cast<int>(xPosition),
-		position.y
+	    static_cast<int>(xPos),
+	    static_cast<int>(yPos)
 	));
 
-	// ¹ß»ç Å¸ÀÌ¸Ó ¾÷µ¥ÀÌÆ®.
+	// ë°œì‚¬ íƒ€ì´ë¨¸ ì—…ë°ì´íŠ¸.
 	timer.Tick(deltaTime);
 	if (!timer.IsTimeOut())
 	{
 		return;
 	}
 
-	// Å¸ÀÌ¸Ó ¸®¼Â.
+	// íƒ€ì´ë¨¸ ë¦¬ì…‹.
 	timer.Reset();
 
-	// Åº¾à ¹ß»ç.
+	// íƒ„ì•½ ë°œì‚¬.
 	GetOwner()->AddNewActor(new EnemyBullet(
-		Vector2(position.x + width / 2, position.y),
+		Vector2(position.x + width / 2, position.y + height / 2),
 		Util::RandomRange(10.0f, 20.0f)
 	));
 }
 
 void Enemy::OnDamaged()
 {
-	// ¾×ÅÍ Á¦°Å.
+	// ì•¡í„° ì œê±°.
 	Destroy();
 
-	// ÀÌÆåÆ® »ı¼º (Àç»ıÀ» À§ÇØ).
+	// ì´í™íŠ¸ ìƒì„± (ì¬ìƒì„ ìœ„í•´).
 	GetOwner()->AddNewActor(new EnemyDestroyEffect(position));
 }

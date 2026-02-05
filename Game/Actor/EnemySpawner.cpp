@@ -54,6 +54,6 @@ void EnemySpawner::SpawnEnemy(float deltaTime)
 
 	// 적 생성 요청.
 	GetOwner()->AddNewActor(
-		new Enemy(enemyType[index], yPosition)
+		new Enemy(enemyType[index])
 	);
 }

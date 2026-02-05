@@ -1,4 +1,4 @@
-#include "MouseTester.h"
+ï»¿#include "MouseTester.h"
 #include "Core/Input.h"
 #include "Render/Renderer.h"
 #include "Engine/Engine.h"
@@ -13,7 +13,7 @@ void MouseTester::Tick(float deltaTime)
 {
 	super::Tick(deltaTime);
 
-	// ¸¶¿ì½º ÀÔ·Â Å×½ºÆ®.
+	// ë§ˆìš°ìŠ¤ ìž…ë ¥ í…ŒìŠ¤íŠ¸.
 	if (Input::Get().GetMouseButton(0))
 	{
 		Vector2 mousePosition = Input::Get().MousePosition();

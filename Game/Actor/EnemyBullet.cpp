@@ -1,4 +1,4 @@
-#include "EnemyBullet.h"
+ï»¿#include "EnemyBullet.h"
 #include "Engine/Engine.h"
 
 EnemyBullet::EnemyBullet(
@@ -15,17 +15,17 @@ void EnemyBullet::Tick(float deltaTime)
 {
 	super::Tick(deltaTime);
 
-	// yÀ§Ä¡ ¾÷µ¥ÀÌÆ®.
+	// yìœ„ì¹˜ ì—…ë°ì´íŠ¸.
 	yPosition = yPosition + moveSpeed * deltaTime;
 
-	// ÁÂÇ¥ °Ë»ç (È­¸é ¾Æ·¡ ³¡ ÁöÁ¡À» ¹þ¾î³µ´ÂÁö È®ÀÎ).
+	// ì¢Œí‘œ ê²€ì‚¬ (í™”ë©´ ì•„ëž˜ ë ì§€ì ì„ ë²—ì–´ë‚¬ëŠ”ì§€ í™•ì¸).
 	if (yPosition >= Engine::Get().GetHeight())
 	{
 		Destroy();
 		return;
 	}
 
-	// À§Ä¡ ¼³Á¤.
+	// ìœ„ì¹˜ ì„¤ì •.
 	SetPosition(
 		Vector2(position.x, static_cast<int>(yPosition))
 	);
