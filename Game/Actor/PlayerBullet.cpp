@@ -12,7 +12,7 @@ PlayerBullet::~PlayerBullet()
 void PlayerBullet::Tick(float deltaTime)
 {
 	super::Tick(deltaTime);
-
+	
 	// 위로 이동 처리. 초단위로 이동.
 	//yPosition -= moveSpeed * deltaTime;
 	//x,y position 계산하기

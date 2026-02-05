@@ -21,7 +21,8 @@ public:
 	Player();
 	~Player();
 public:
-	void AutoFireAt(const Actor& target);
+    void AutoFireAt(const Actor& target);
+    void AutoFireAtMouse();
 private:
 	virtual void Tick(float deltaTime) override;
 

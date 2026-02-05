@@ -232,7 +232,21 @@ void Player::AutoFireAt(const Actor& target)
     {
         return;
     }
-    Vector2 startPos(GetPosition());
+
+    //자동으로 enemy 방향으로 공격
     Vector2f dir = Vector2f((Vector2f)target.GetPosition() - (Vector2f)GetPosition()).Normalized();
+    Fire(dir);
+}
+
+void Player::AutoFireAtMouse()
+{
+    if (!CanShoot())
+    {
+        return;
+    }
+
+    //자동으로 mouse 방향으로 공격
+    Vector2f dir = Vector2f((Vector2f)Input::Get().MousePosition() - (Vector2f)GetPosition()).Normalized();
+
     Fire(dir);
 }

@@ -36,7 +36,7 @@ private:
 
 	// 좌우 이동 처리를 위한 변수.
 
-	float moveSpeed = 12.f;
+	float moveSpeed = 6.f;
 
 	Vector2f dir;
 	Vector2f currPos;
