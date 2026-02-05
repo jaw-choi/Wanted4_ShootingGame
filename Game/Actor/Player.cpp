@@ -1,4 +1,4 @@
-#include "Player.h"
+ï»¿#include "Player.h"
 #include "Actor/PlayerBullet.h"
 #include "Core/Input.h"
 #include "Engine/Engine.h"
@@ -6,16 +6,16 @@
 #include "Render/Renderer.h"
 
 Player::Player()
-	: super("<=A=>", Vector2::Zero, Color::Green),
-	fireMode(FireMode::OneShot)
+    : super("<=A=>", Vector2::Zero, Color::Green),
+    fireMode(FireMode::OneShot)
 {
-	// »ı¼º À§Ä¡ ¼³Á¤.
-	int xPosition = (Engine::Get().GetWidth() / 2) - (width / 2);
-	int yPosition = Engine::Get().GetHeight() - 2;
-	SetPosition(Vector2(xPosition, yPosition));
+    // ìƒì„± ìœ„ì¹˜ ì„¤ì •.
+    int xPosition = (Engine::Get().GetWidth() / 2) - (width / 2);
+    int yPosition = Engine::Get().GetHeight() - 2;
+    SetPosition(Vector2(xPosition, yPosition));
 
-	// Å¸ÀÌ¸Ó ¸ñÇ¥ ½Ã°£ ¼³Á¤.
-	timer.SetTargetTime(fireInterval);
+    // íƒ€ì´ë¨¸ ëª©í‘œ ì‹œê°„ ì„¤ì •.
+    timer.SetTargetTime(fireInterval);
 }
 
 Player::~Player()
@@ -24,110 +24,143 @@ Player::~Player()
 
 void Player::Tick(float deltaTime)
 {
-	super::Tick(deltaTime);
+    super::Tick(deltaTime);
 
-	// Á¾·á Ã³¸®.
-	if (Input::Get().GetKeyDown(VK_ESCAPE))
-	{
-		// °ÔÀÓ Á¾·á.
-		QuitGame();
-	}
+    // ì¢…ë£Œ ì²˜ë¦¬.
+    if (Input::Get().GetKeyDown(VK_ESCAPE))
+    {
+        // ê²Œì„ ì¢…ë£Œ.
+        QuitGame();
+    }
 
-	// °æ°ú ½Ã°£ ¾÷µ¥ÀÌÆ®.
-	//elapsedTime += deltaTime;
-	timer.Tick(deltaTime);
+    // ê²½ê³¼ ì‹œê°„ ì—…ë°ì´íŠ¸.
+    //elapsedTime += deltaTime;
+    timer.Tick(deltaTime);
 
-	// ÁÂ¿ì ¹æÇâÅ° ÀÔ·ÂÃ³¸®.
-	if (Input::Get().GetKey(VK_LEFT))
-	{
-		MoveLeft();
-	}
-	if (Input::Get().GetKey(VK_RIGHT))
-	{
-		MoveRight();
-	}
+    // ì¢Œìš° ë°©í–¥í‚¤ ì…ë ¥ì²˜ë¦¬.
+    if (Input::Get().GetKey(VK_LEFT))
+    {
+        MoveLeft();
+    }
+    if (Input::Get().GetKey(VK_RIGHT))
+    {
+        MoveRight();
+    }
+    if (Input::Get().GetKey(VK_DOWN))
+    {
+        MoveDown();
+    }
+    if (Input::Get().GetKey(VK_UP))
+    {
+        MoveUp();
+    }
 
-	// ½ºÆäÀÌ½º Å°¸¦ È°¿ëÇØ Åº¾à ¹ß»ç.
-	if (fireMode == FireMode::OneShot)
-	{
-		if (Input::Get().GetKeyDown(VK_SPACE))
-		{
-			Fire();
-		}
-	}
-	else if (fireMode == FireMode::Repeat)
-	{
-		if (Input::Get().GetKey(VK_SPACE))
-		{
-			FireInterval();
-		}
-	}
+    // ìŠ¤í˜ì´ìŠ¤ í‚¤ë¥¼ í™œìš©í•´ íƒ„ì•½ ë°œì‚¬.
+    if (fireMode == FireMode::OneShot)
+    {
+        if (Input::Get().GetKeyDown(VK_SPACE))
+        {
+            Fire();
+        }
+    }
+    else if (fireMode == FireMode::Repeat)
+    {
+        if (Input::Get().GetKey(VK_SPACE))
+        {
+            FireInterval();
+        }
+    }
 
-	// ¹ß»ç ¸ğµå ÀüÈ¯.
-	if (Input::Get().GetKeyDown('R'))
-	{
-		int mode = static_cast<int>(fireMode);
-		mode = 1 - mode;
-		fireMode = static_cast<FireMode>(mode);
-	}
+    // ë°œì‚¬ ëª¨ë“œ ì „í™˜.
+    if (Input::Get().GetKeyDown('R'))
+    {
+        int mode = static_cast<int>(fireMode);
+        mode = 1 - mode;
+        fireMode = static_cast<FireMode>(mode);
+    }
 }
 
 void Player::MoveRight()
 {
-	// ¿À¸¥ÂÊ ÀÌµ¿ Ã³¸®.
-	position.x += 1;
+    // ì˜¤ë¥¸ìª½ ì´ë™ ì²˜ë¦¬.
+    position.x += 1;
 
-	// ÁÂÇ¥ °Ë»ç.
-	// "<-=A=->"
-	if (position.x + width > Engine::Get().GetWidth())
-	{
-		position.x -= 1;
-	}
+    // ì¢Œí‘œ ê²€ì‚¬.
+    // "<-=A=->"
+    if (position.x + width > Engine::Get().GetWidth())
+    {
+        position.x -= 1;
+    }
 }
 
 void Player::MoveLeft()
 {
-	// ¿ŞÂÊ ÀÌµ¿ Ã³¸®.
-	position.x -= 1;
+    // ì™¼ìª½ ì´ë™ ì²˜ë¦¬.
+    position.x -= 1;
 
-	// ÁÂÇ¥ °Ë»ç.
-	if (position.x < 0)
-	{
-		position.x = 0;
-	}
+    // ì¢Œí‘œ ê²€ì‚¬.
+    if (position.x < 0)
+    {
+        position.x = 0;
+    }
+}
+
+void Player::MoveDown()
+{
+    // ì˜¤ë¥¸ìª½ ì´ë™ ì²˜ë¦¬.
+    position.y += 1;
+
+    // ì¢Œí‘œ ê²€ì‚¬.
+    // "<-=A=->"
+    if (position.y + height > Engine::Get().GetHeight())
+    {
+        position.y -= 1;
+    }
+}
+
+void Player::MoveUp()
+{
+    // ì™¼ìª½ ì´ë™ ì²˜ë¦¬.
+    position.y -= 1;
+
+    // ì¢Œí‘œ ê²€ì‚¬.
+    if (position.y < 0)
+    {
+        position.y = 0;
+    }
 }
 
 void Player::Fire()
 {
-	// °æ°ú ½Ã°£ ÃÊ±âÈ­.
-	//elapsedTime = 0.0f;
-	timer.Reset();
+    // ê²½ê³¼ ì‹œê°„ ì´ˆê¸°í™”.
+    //elapsedTime = 0.0f;
+    timer.Reset();
 
-	// À§Ä¡ ¼³Á¤.
-	Vector2 bulletPosition(
-		position.x + (width / 2), 
-		position.y
-	);
+    // ìœ„ì¹˜ ì„¤ì •.
+    Vector2 bulletPosition(
+        position.x + (width / 2),
+        position.y
+    );
 
-	// ¾×ÅÍ »ı¼º.
-	GetOwner()->AddNewActor(new PlayerBullet(bulletPosition));
+    // ì•¡í„° ìƒì„±.
+    GetOwner()->AddNewActor(new PlayerBullet(bulletPosition));
 }
 
 void Player::FireInterval()
 {
-	// ¹ß»ç °¡´É ¿©ºÎ È®ÀÎ.
-	if (!CanShoot())
-	{
-		return;
-	}
+    // ë°œì‚¬ ê°€ëŠ¥ ì—¬ë¶€ í™•ì¸.
+    if (!CanShoot())
+    {
+        return;
+    }
 
-	// ¹ß»ç.
-	Fire();
+    // ë°œì‚¬.
+    Fire();
 }
 
 bool Player::CanShoot() const
 {
-	// °æ°ú ½Ã°£ È®ÀÎ.
-	// ¹ß»ç °£°İº¸´Ù ´õ ¸¹ÀÌ Èê·¶´ÂÁö.
-	return timer.IsTimeOut();
+    // ê²½ê³¼ ì‹œê°„ í™•ì¸.
+    // ë°œì‚¬ ê°„ê²©ë³´ë‹¤ ë” ë§ì´ í˜ë €ëŠ”ì§€.
+    return timer.IsTimeOut();
 }
