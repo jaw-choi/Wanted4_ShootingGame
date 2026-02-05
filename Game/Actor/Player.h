@@ -42,8 +42,18 @@ private:
 	// 연속 발사 함수.
 	void FireInterval();
 
+	// 연속 이동 함수.
+	void MoveUpInterval();
+	void MoveDownInterval();
+	void MoveLeftInterval();
+	void MoveRightInterval();
+
 	// 발사 가능여부 확인 함수.
 	bool CanShoot() const;
+
+	// Y축 이동 가능여부 확인 함수.
+	bool CanMoveY() const;
+	bool CanMoveX() const;
 
 private:
 	// 발사 모드.
@@ -52,6 +62,13 @@ private:
 	// 타이머 변수.
 	Timer timer;
 
+	// 타이머 변수.
+	Timer yPostimer;
+	Timer xPostimer;
+
 	// 연사 시간 간격.
 	float fireInterval = 0.2f;
+
+	float moveXInterval = 0.2f;
+	float moveYInterval = 0.2f;
 };

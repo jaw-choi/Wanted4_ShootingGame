@@ -16,6 +16,8 @@ Player::Player()
 
     // 타이머 목표 시간 설정.
     timer.SetTargetTime(fireInterval);
+    xPostimer.SetTargetTime(moveXInterval);
+    yPostimer.SetTargetTime(moveYInterval);
 }
 
 Player::~Player()
@@ -36,23 +38,24 @@ void Player::Tick(float deltaTime)
     // 경과 시간 업데이트.
     //elapsedTime += deltaTime;
     timer.Tick(deltaTime);
-
+    xPostimer.Tick(deltaTime);
+    yPostimer.Tick(deltaTime);
     // 좌우 방향키 입력처리.
     if (Input::Get().GetKey(VK_LEFT))
     {
-        MoveLeft();
+        MoveLeftInterval();
     }
     if (Input::Get().GetKey(VK_RIGHT))
     {
-        MoveRight();
+        MoveRightInterval();
     }
     if (Input::Get().GetKey(VK_DOWN))
     {
-        MoveDown();
+        MoveDownInterval();
     }
     if (Input::Get().GetKey(VK_UP))
     {
-        MoveUp();
+        MoveUpInterval();
     }
 
     // 스페이스 키를 활용해 탄약 발사.
@@ -82,6 +85,7 @@ void Player::Tick(float deltaTime)
 
 void Player::MoveRight()
 {
+    xPostimer.Reset();
     // 오른쪽 이동 처리.
     position.x += 1;
 
@@ -95,6 +99,7 @@ void Player::MoveRight()
 
 void Player::MoveLeft()
 {
+    xPostimer.Reset();
     // 왼쪽 이동 처리.
     position.x -= 1;
 
@@ -107,7 +112,8 @@ void Player::MoveLeft()
 
 void Player::MoveDown()
 {
-    // 오른쪽 이동 처리.
+    yPostimer.Reset();
+    // 아래쪽 이동 처리.
     position.y += 1;
 
     // 좌표 검사.
@@ -120,7 +126,8 @@ void Player::MoveDown()
 
 void Player::MoveUp()
 {
-    // 왼쪽 이동 처리.
+    yPostimer.Reset();
+    // 위쪽 이동 처리.
     position.y -= 1;
 
     // 좌표 검사.
@@ -158,9 +165,73 @@ void Player::FireInterval()
     Fire();
 }
 
+void Player::MoveRightInterval()
+{
+    // 이동 가능 여부 확인.
+    if (!CanMoveX())
+    {
+        return;
+    }
+
+    // 이동 -Y or +Y.
+    MoveRight();
+}
+
+void Player::MoveLeftInterval()
+{
+    // 이동 가능 여부 확인.
+    if (!CanMoveX())
+    {
+        return;
+    }
+
+    // 이동 -Y or +Y.
+    MoveLeft();
+}
+
+void Player::MoveUpInterval()
+{
+    // 이동 가능 여부 확인.
+    if (!CanMoveY())
+    {
+        return;
+    }
+
+    // 이동 -Y or +Y.
+    MoveUp();
+}
+
+void Player::MoveDownInterval()
+{
+    // 이동 가능 여부 확인.
+    if (!CanMoveY())
+    {
+        return;
+    }
+
+    // 이동 -Y or +Y.
+    MoveDown();
+}
+
+
+
 bool Player::CanShoot() const
 {
     // 경과 시간 확인.
     // 발사 간격보다 더 많이 흘렀는지.
     return timer.IsTimeOut();
+}
+
+bool Player::CanMoveX() const
+{
+    // 경과 시간 확인.
+    // 발사 간격보다 더 많이 흘렀는지.
+    return xPostimer.IsTimeOut();
+}
+
+bool Player::CanMoveY() const
+{
+    // 경과 시간 확인.
+    // 발사 간격보다 더 많이 흘렀는지.
+    return yPostimer.IsTimeOut();
 }
