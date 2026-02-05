@@ -193,7 +193,8 @@ namespace Wanted
 					case MOUSE_EVENT:
 					{
 						// 마우스 x 위치 설정.
-						mousePosition.x = record.Event.MouseEvent.dwMousePosition.X;
+					    mousePosition.x = record.Event.MouseEvent.dwMousePosition.X;
+					    mousePosition.y = record.Event.MouseEvent.dwMousePosition.Y;
 
 						// x좌표 조정 (마우스 커서가 화면 안에 고정되도록).
 						mousePosition.x
