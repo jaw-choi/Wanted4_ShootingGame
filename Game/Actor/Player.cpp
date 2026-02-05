@@ -28,15 +28,15 @@ void Player::Tick(float deltaTime)
 {
     super::Tick(deltaTime);
 
+     //player 실시간 position 확인 - 디버그 모드 시
     //char buffer[256] = {};
     //sprintf_s(
     //    buffer,
     //    256,
-    //    "player: (%d, %d)",
+    //    GetPosition().ToString(),
     //    position.x,
     //    position.y
     //);
-
     //ChangeImage(buffer);
 
     // 종료 처리.
@@ -52,46 +52,24 @@ void Player::Tick(float deltaTime)
     xPostimer.Tick(deltaTime);
     yPostimer.Tick(deltaTime);
     // 좌우 방향키 입력처리.
-    if (Input::Get().GetKey(VK_LEFT))
+    if (Input::Get().GetKey('A'))
     {
         MoveLeftInterval();
     }
-    if (Input::Get().GetKey(VK_RIGHT))
+    if (Input::Get().GetKey('D'))
     {
         MoveRightInterval();
     }
-    if (Input::Get().GetKey(VK_DOWN))
+    if (Input::Get().GetKey('S'))
     {
         MoveDownInterval();
     }
-    if (Input::Get().GetKey(VK_UP))
+    if (Input::Get().GetKey('W'))
     {
         MoveUpInterval();
     }
 
-    // 스페이스 키를 활용해 탄약 발사.
-    if (fireMode == FireMode::OneShot)
-    {
-        if (Input::Get().GetKeyDown(VK_SPACE))
-        {
-            Fire();
-        }
-    }
-    else if (fireMode == FireMode::Repeat)
-    {
-        if (Input::Get().GetKey(VK_SPACE))
-        {
-            FireInterval();
-        }
-    }
-
-    // 발사 모드 전환.
-    if (Input::Get().GetKeyDown('R'))
-    {
-        int mode = static_cast<int>(fireMode);
-        mode = 1 - mode;
-        fireMode = static_cast<FireMode>(mode);
-    }
+    FireInterval();
 }
 
 void Player::MoveRight()

@@ -16,8 +16,8 @@ Enemy::Enemy(const char* image)
 	{Engine::Get().GetWidth() - width - 1,Engine::Get().GetHeight() - height - 1} };
 
     // 이동 방향에 따른 적 위치 설정.
-    xPos = positions[random % 4].x;
-    yPos = positions[random % 4].y;
+    xPos = (float)positions[random % 4].x;
+    yPos = (float)positions[random % 4].y;
 
     // 발사 타이머 목표 시간 설정.
     timer.SetTargetTime(Util::RandomRange(1.0f, 3.0f));
@@ -62,7 +62,7 @@ void Enemy::MoveTo(const Actor& target,float deltaTime)
 {
     Vector2 destination = target.GetPosition();
 
-    Vector2 dir = (destination - GetPosition());
+    Vector2f dir = Vector2f(destination - GetPosition()).Normalized();
 
     xPos += dir.x * moveSpeed * deltaTime;
     yPos += dir.y * moveSpeed * deltaTime;

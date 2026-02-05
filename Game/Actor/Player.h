@@ -67,7 +67,7 @@ private:
 	Timer xPostimer;
 
 	// 연사 시간 간격.
-	float fireInterval = 0.2f;
+	float fireInterval = 1.f;
 
 	float moveXInterval = 0.2f;
 	float moveYInterval = 0.2f;

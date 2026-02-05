@@ -1,43 +1,69 @@
-#pragma once
+ï»¿#pragma once
 
 #include "Common/Common.h"
 #include <Windows.h>
 
 namespace Wanted
 {
-	class WANTED_API Vector2
-	{
-	public:
-		Vector2();
-		Vector2(int x, int y);
-		~Vector2();
 
-		// ¹®ÀÚ¿­·Î º¯È¯ÇØ¼­ ¹İÈ¯ÇÏ´Â ÇÔ¼ö.
-		const char* ToString();
 
-		// ¿¬»êÀÚ ¿À¹ö·Îµù.
-		Vector2 operator+(const Vector2& other) const;
-		Vector2 operator-(const Vector2& other) const;
+    class WANTED_API Vector2
+    {
+    public:
+        Vector2();
+        Vector2(int x, int y);
+        ~Vector2();
 
-		bool operator==(const Vector2& other) const;
-		bool operator!=(const Vector2& other) const;
+        // ë¬¸ìì—´ë¡œ ë³€í™˜í•´ì„œ ë°˜í™˜í•˜ëŠ” í•¨ìˆ˜.
+        const char* ToString();
 
-		// Çüº¯È¯ ¿¬»êÀÚ ¿À¹ö·Îµù.
-		operator COORD() const;
+        // ì—°ì‚°ì ì˜¤ë²„ë¡œë”©.
+        Vector2 operator+(const Vector2& other) const;
+        Vector2 operator-(const Vector2& other) const;
 
-		// º¤ÅÍ ±âº» °ª.
-		static Vector2 Zero;
-		static Vector2 One;
-		static Vector2 Up;
-		static Vector2 Right;
+        bool operator==(const Vector2& other) const;
+        bool operator!=(const Vector2& other) const;
 
-	public:
-		// x/y ÁÂÇ¥.
-		int x = 0;
-		int y = 0;
+        // í˜•ë³€í™˜ ì—°ì‚°ì ì˜¤ë²„ë¡œë”©.
+        operator COORD() const;
 
-	private:
-		// º¤ÅÍ °ªÀ» ¹®ÀÚ¿­·Î º¯È¯ÇÒ ¶§ »ç¿ëÇÒ º¯¼ö.
-		char* string = nullptr;
-	};
+        // ë²¡í„° ê¸°ë³¸ ê°’.
+        static Vector2 Zero;
+        static Vector2 One;
+        static Vector2 Up;
+        static Vector2 Right;
+
+    public:
+        // x/y ì¢Œí‘œ.
+        int x = 0;
+        int y = 0;
+
+    private:
+        // ë²¡í„° ê°’ì„ ë¬¸ìì—´ë¡œ ë³€í™˜í•  ë•Œ ì‚¬ìš©í•  ë³€ìˆ˜.
+        char* string = nullptr;
+    };
+
+    class WANTED_API Vector2f
+    {
+    public:
+        Vector2f();
+        Vector2f(float x, float y);
+        ~Vector2f();
+
+        //explicit ì´ ëª…ì‹œì ì¸ ë³€í™˜í•˜ê²Œ í•´ì¤Œ
+        explicit Vector2f(const Vector2& v); 
+
+        Vector2f Normalized() const;
+        float LengthSquared() const;
+
+        Vector2f operator+(const Vector2f& rhs) const;
+        Vector2f operator-(const Vector2f& rhs) const;
+
+        bool operator==(const Vector2f& other) const;
+        bool operator!=(const Vector2f& other) const;
+    public:
+        float x;
+        float y;
+    };
+
 }

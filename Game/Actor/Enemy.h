@@ -38,7 +38,7 @@ private:
 	// 좌우 이동 처리를 위한 변수.
 	float xPos = 0.0f;
 	float yPos = 0.0f;
-	float moveSpeed = 0.2f;
+	float moveSpeed = 1.f;
 
 	// 발사 타이머.
 	Timer timer;

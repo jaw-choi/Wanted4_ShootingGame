@@ -1,4 +1,4 @@
-#include "Vector2.h"
+Ôªø#include "Vector2.h"
 #include <iostream>
 
 namespace Wanted
@@ -28,7 +28,7 @@ namespace Wanted
 	
 	const char* Vector2::ToString()
 	{
-		// ±‚¡∏ πÆ¿⁄ø≠¿Ã ¿÷¥Ÿ∏È ¡¶∞≈.
+		// Í∏∞Ï°¥ Î¨∏ÏûêÏó¥Ïù¥ ÏûàÎã§Î©¥ Ï†úÍ±∞.
 		if (string)
 		{
 			delete[] string;
@@ -69,5 +69,69 @@ namespace Wanted
 		coord.Y = static_cast<short>(y);
 
 		return coord;
+	}
+	//--------------------------------------------------------------------------------------------------------/
+	//--------------------------------------------------------------------------------------------------------/
+	//---------------------------------------vector2 float ---------------------------------------------------/
+	//--------------------------------------------------------------------------------------------------------/
+	//--------------------------------------------------------------------------------------------------------/
+
+	Vector2f::Vector2f()
+	    : x(0.0f), y(0.0f)
+	{
+	}
+
+	Vector2f::Vector2f(float x, float y)
+	    : x(x), y(y)
+	{
+	}
+
+	Vector2f::~Vector2f()
+	{
+	}
+
+	Vector2f::Vector2f(const Vector2& v)
+	    : x(static_cast<float>(v.x)),
+	    y(static_cast<float>(v.y))
+	{
+	}
+
+
+	float Vector2f::LengthSquared() const
+	{
+	    return x * x + y * y;
+	}
+
+	Vector2f Vector2f::Normalized() const
+	{
+	    float lenSq = LengthSquared();
+	    if (lenSq <= 0.0f)
+		return Vector2f(0.0f, 0.0f);
+
+	    float invLen = 1.0f / std::sqrt(lenSq);
+	    return Vector2f(x * invLen, y * invLen);
+	}
+
+	Vector2f Vector2f::operator+(const Vector2f& rhs) const
+	{
+	    return Vector2f(x + rhs.x, y + rhs.y);
+	}
+
+	Vector2f Vector2f::operator-(const Vector2f& rhs) const
+	{
+	    return Vector2f(x - rhs.x, y - rhs.y);
+	}
+
+	bool Vector2f::operator==(const Vector2f& other) const
+	{
+	    // Î∂ÄÎèôÏÜåÏàòÏ†ê ÎπÑÍµêÎäî Ïò§Ï∞® ÌóàÏö©
+	    const float eps = 0.00001f;
+	    return std::fabs(x - other.x) < eps &&
+		std::fabs(y - other.y) < eps;
+	}
+
+	bool Vector2f::operator!=(const Vector2f& other) const
+	{
+	    return !(*this == other);
 	}
 }
