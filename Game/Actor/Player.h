@@ -20,7 +20,8 @@ class Player : public Actor
 public:
 	Player();
 	~Player();
-
+public:
+	void AutoFireAt(const Actor& target);
 private:
 	virtual void Tick(float deltaTime) override;
 
@@ -37,7 +38,7 @@ private:
 	void MoveUp();
 
 	// 탄약 발사 함수.
-	void Fire();
+	void Fire(Vector2f dir);
 
 	// 연속 발사 함수.
 	void FireInterval();
@@ -54,6 +55,7 @@ private:
 	// Y축 이동 가능여부 확인 함수.
 	bool CanMoveY() const;
 	bool CanMoveX() const;
+
 
 private:
 	// 발사 모드.

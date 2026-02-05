@@ -29,16 +29,17 @@ public:
 	// 대미지 받았을 때 처리할 함수.
 	void OnDamaged();
 
-	void MoveTo(const Actor& target,float deltaTime);
-
+	void MoveTo(const Actor& target);
 private:
 	// 이동 방향 열거형.
 	MoveDirection direction = MoveDirection::None;
 
 	// 좌우 이동 처리를 위한 변수.
-	float xPos = 0.0f;
-	float yPos = 0.0f;
-	float moveSpeed = 1.f;
+
+	float moveSpeed = 12.f;
+
+	Vector2f dir;
+	Vector2f currPos;
 
 	// 발사 타이머.
 	Timer timer;

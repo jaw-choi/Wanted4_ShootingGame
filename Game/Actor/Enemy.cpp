@@ -10,15 +10,15 @@ Enemy::Enemy(const char* image)
     : super(image)
 {
     int random = Util::Random(0, 10);
-    std::vector<Vector2> positions = { {10,10},
+    std::vector<Vector2> positions = { {0,0},
 	{Engine::Get().GetWidth() - width - 1,0},
 	{0,Engine::Get().GetHeight() - height - 1},
 	{Engine::Get().GetWidth() - width - 1,Engine::Get().GetHeight() - height - 1} };
 
     // 이동 방향에 따른 적 위치 설정.
-    xPos = (float)positions[random % 4].x;
-    yPos = (float)positions[random % 4].y;
-
+    currPos.x = (float)positions[random % 4].x;
+    currPos.y = (float)positions[random % 4].y;
+    dir = Vector2f::Zero;
     // 발사 타이머 목표 시간 설정.
     timer.SetTargetTime(Util::RandomRange(1.0f, 3.0f));
 }
@@ -31,6 +31,12 @@ void Enemy::Tick(float deltaTime)
 {
 	super::Tick(deltaTime);
 
+	// Enemy 이동
+	currPos = currPos + dir * moveSpeed * deltaTime;
+	SetPosition(Vector2(
+	    static_cast<int>(currPos.x),
+	    static_cast<int>(currPos.y)
+	));
 
 	// 발사 타이머 업데이트.
 	timer.Tick(deltaTime);
@@ -58,20 +64,12 @@ void Enemy::OnDamaged()
 	GetOwner()->AddNewActor(new EnemyDestroyEffect(position));
 }
 
-void Enemy::MoveTo(const Actor& target,float deltaTime)
+void Enemy::MoveTo(const Actor& target)
 {
-    Vector2 destination = target.GetPosition();
+    Vector2f destination = (Vector2f)target.GetPosition();
 
-    Vector2f dir = Vector2f(destination - GetPosition()).Normalized();
+    dir = Vector2f(destination - currPos).Normalized();
 
-    xPos += dir.x * moveSpeed * deltaTime;
-    yPos += dir.y * moveSpeed * deltaTime;
-
-    // 실제 이동.
-    SetPosition(Vector2(
-	static_cast<int>(xPos),
-	static_cast<int>(yPos)
-    ));
-
+    
 }
 

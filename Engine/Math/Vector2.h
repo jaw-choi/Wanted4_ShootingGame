@@ -58,9 +58,14 @@ namespace Wanted
 
         Vector2f operator+(const Vector2f& rhs) const;
         Vector2f operator-(const Vector2f& rhs) const;
+        Vector2f operator*(float s) const;
 
         bool operator==(const Vector2f& other) const;
         bool operator!=(const Vector2f& other) const;
+
+        static Vector2f Zero;
+        static Vector2f One;
+
     public:
         float x;
         float y;

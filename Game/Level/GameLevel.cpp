@@ -8,6 +8,8 @@
 #include "Render/Renderer.h"
 #include "Engine/Engine.h"
 
+#include <set>
+
 GameLevel::GameLevel()
 {
 	// Player 액터 추가.
@@ -31,7 +33,7 @@ void GameLevel::Tick(float deltaTime)
 	// 충돌 판정 처리.
 	ProcessCollisionPlayerBulletAndEnemy();
 	ProcessCollisionPlayerAndEnemyBullet();
-	ProcessAstarAlgorithmPlayerAndEnemy(deltaTime);
+	ProcessAstarAlgorithmPlayerAndEnemy();
 }
 
 void GameLevel::Draw()
@@ -159,9 +161,10 @@ void GameLevel::ShowScore()
 		scoreString,
 		Vector2(0, Engine::Get().GetHeight() - 1)
 	);
+
 }
 
-void GameLevel::ProcessAstarAlgorithmPlayerAndEnemy(float deltaTime)
+void GameLevel::ProcessAstarAlgorithmPlayerAndEnemy()
 {
     // 플레이어 탄약과 적 액터 필터링.
     Player* player = nullptr;
@@ -188,19 +191,39 @@ void GameLevel::ProcessAstarAlgorithmPlayerAndEnemy(float deltaTime)
 	return;
     }
 
-
-    // 충돌 판정.
+    //enemy와 그것의 거리를 pair 로 묶어서 set으로 정리하면 distance 크기 순으로 자동정렬됨
+    //distance가 같으면 중복제거 되기 때문에 multiset 쓰겠음
+    //pair에서 first를 거리로 넣어서 거리순으로 정렬 되게 함
+    //std::multiset<std::pair<float, Actor*>> distances;
+    //dir만 전달
+    Enemy* closestEnemy = nullptr;
+    float minDistSq = FLT_MAX;
     for (Actor* const enemy : enemies)
     {
-	//A* algorithm 계산
+	// Todo: A* algorithm 계산으로 변경
+	// 
+
+	// min dist인 Enemy 구하기
+	float distSq = Vector2f(enemy->GetPosition() - player->GetPosition()).LengthSquared();
+
+	if (distSq < minDistSq)
+	{
+	    minDistSq = distSq;
+	    closestEnemy = static_cast<Enemy*>(enemy);
+	}
+
 
 	//actor -> Enemy 다운캐스팅 체크
 	//Enemy* ptrEnemy = dynamic_cast<Enemy*>(enemy);
 	//위와 같은 효과
-	if (enemy->IsTypeOf<Enemy>())
-	{
-	    // Tick 마다 각 enemy에게 player 좌표 전달 
-	    static_cast<Enemy*>(enemy)->MoveTo(*player, deltaTime);
-	}
+	//if (enemy->IsTypeOf<Enemy>())
+	//이미 Enemy이기 때문에
+	static_cast<Enemy*>(enemy)->MoveTo(*player);
     }
+    if (closestEnemy)
+    {
+	player->AutoFireAt(*closestEnemy);
+    }
+
 }
+    

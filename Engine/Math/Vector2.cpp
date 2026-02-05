@@ -76,6 +76,9 @@ namespace Wanted
 	//--------------------------------------------------------------------------------------------------------/
 	//--------------------------------------------------------------------------------------------------------/
 
+	Vector2f Vector2f::Zero(0.f, 0.f);
+	Vector2f Vector2f::One(1.f, 1.f);
+
 	Vector2f::Vector2f()
 	    : x(0.0f), y(0.0f)
 	{
@@ -120,6 +123,10 @@ namespace Wanted
 	Vector2f Vector2f::operator-(const Vector2f& rhs) const
 	{
 	    return Vector2f(x - rhs.x, y - rhs.y);
+	}
+	Vector2f Vector2f::operator*(float s) const
+	{
+	    return Vector2f(x * s, y * s);
 	}
 
 	bool Vector2f::operator==(const Vector2f& other) const

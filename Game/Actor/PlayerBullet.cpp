@@ -1,8 +1,7 @@
 ﻿#include "PlayerBullet.h"
 
-PlayerBullet::PlayerBullet(const Vector2& position)
-	: super("@", position, Color::Blue),
-	yPosition(static_cast<float>(position.y))
+PlayerBullet::PlayerBullet(const Vector2f& position, const Vector2f& dir)
+	: super("@", Vector2((int)position.x,(int)position.y), Color::Blue), currPos(position), dir(dir.Normalized())
 {
 }
 
@@ -15,20 +14,34 @@ void PlayerBullet::Tick(float deltaTime)
 	super::Tick(deltaTime);
 
 	// 위로 이동 처리. 초단위로 이동.
-	yPosition -= moveSpeed * deltaTime;
+	//yPosition -= moveSpeed * deltaTime;
+	//x,y position 계산하기
+
 
 	// 좌표 검사.
-	if (yPosition < 0.0f)
+	if (!IsOnScreen())
 	{
 		// 삭제 처리.
 		Destroy();
 		return;
 	}
 
+	// 위치 갱신.
+	// 이렇게 하니 movespeed 안먹음
+	//Vector2f pos(GetPosition());
+	//pos = pos + dir * moveSpeed * deltaTime;
+
+	currPos = currPos + dir * moveSpeed * deltaTime;
+	SetPosition(Vector2(
+	    static_cast<int>(currPos.x),
+	    static_cast<int>(currPos.y)
+	));
+	
 	// 액터의 위치로 변환.
-	Vector2 newPosition = GetPosition();
-	newPosition.y = static_cast<int>(yPosition);
+	//Vector2 newPosition = GetPosition();
+	//newPosition.y = static_cast<int>(yPosition);
 	
 	// 위치 갱신.
-	SetPosition(newPosition);
+	//SetPosition(newPosition);
 }
+

@@ -3,6 +3,7 @@
 #include "Common/RTTI.h"
 #include "Math/Vector2.h"
 #include "Math/Color.h"
+#include "Engine/Engine.h"
 
 namespace Wanted
 {
@@ -64,6 +65,19 @@ namespace Wanted
 		inline bool DestroyRequested() const
 		{
 			return destroyRequested;
+		}
+
+		inline bool IsOnScreen() const
+		{
+		    Vector2 pos = GetPosition();
+
+		    int maxX = Engine::Get().GetWidth() - width - 1;
+		    int maxY = Engine::Get().GetHeight() - height - 1;
+
+		    return pos.x >= 0 &&
+			pos.y >= 0 &&
+			pos.x <= maxX &&
+			pos.y <= maxY;
 		}
 
 		inline int GetSortingOrder() const { return sortingOrder; }

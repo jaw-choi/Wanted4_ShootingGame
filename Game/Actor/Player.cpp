@@ -52,24 +52,24 @@ void Player::Tick(float deltaTime)
     xPostimer.Tick(deltaTime);
     yPostimer.Tick(deltaTime);
     // 좌우 방향키 입력처리.
-    if (Input::Get().GetKey('A'))
+    if (Input::Get().GetKey('A') || Input::Get().GetKey(VK_LEFT))
     {
         MoveLeftInterval();
     }
-    if (Input::Get().GetKey('D'))
+    if (Input::Get().GetKey('D') || Input::Get().GetKey(VK_RIGHT))
     {
         MoveRightInterval();
     }
-    if (Input::Get().GetKey('S'))
+    if (Input::Get().GetKey('S') || Input::Get().GetKey(VK_DOWN))
     {
         MoveDownInterval();
     }
-    if (Input::Get().GetKey('W'))
+    if (Input::Get().GetKey('W') || Input::Get().GetKey(VK_UP))
     {
         MoveUpInterval();
     }
 
-    FireInterval();
+    //FireInterval();
 }
 
 void Player::MoveRight()
@@ -126,33 +126,33 @@ void Player::MoveUp()
     }
 }
 
-void Player::Fire()
+void Player::Fire(Vector2f dir)
 {
     // 경과 시간 초기화.
     //elapsedTime = 0.0f;
     timer.Reset();
 
-    // 위치 설정.
-    Vector2 bulletPosition(
-        position.x + (width / 2),
-        position.y
+    // 생성 위치 설정.
+    Vector2f bulletPosition(
+        (float)(position.x + (width / 2)),
+        (float)position.y
     );
 
     // 액터 생성.
-    GetOwner()->AddNewActor(new PlayerBullet(bulletPosition));
+    GetOwner()->AddNewActor(new PlayerBullet(bulletPosition,dir));
 }
 
-void Player::FireInterval()
-{
-    // 발사 가능 여부 확인.
-    if (!CanShoot())
-    {
-        return;
-    }
-
-    // 발사.
-    Fire();
-}
+//void Player::FireInterval()
+//{
+//    // 발사 가능 여부 확인.
+//    if (!CanShoot())
+//    {
+//        return;
+//    }
+//
+//    // 발사.
+//    //Fire();
+//}
 
 void Player::MoveRightInterval()
 {
@@ -223,4 +223,16 @@ bool Player::CanMoveY() const
     // 경과 시간 확인.
     // 발사 간격보다 더 많이 흘렀는지.
     return yPostimer.IsTimeOut();
+}
+
+// Level에서 매 tick 불림
+void Player::AutoFireAt(const Actor& target)
+{
+    if (!CanShoot())
+    {
+        return;
+    }
+    Vector2 startPos(GetPosition());
+    Vector2f dir = Vector2f((Vector2f)target.GetPosition() - (Vector2f)GetPosition()).Normalized();
+    Fire(dir);
 }
