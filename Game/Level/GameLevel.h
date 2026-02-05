@@ -22,6 +22,7 @@ private:
 	// 충돌 판정 처리 함수.
 	void ProcessCollisionPlayerBulletAndEnemy();
 	void ProcessCollisionPlayerAndEnemyBullet();
+	void ProcessAstarAlgorithmPlayerAndEnemy(float deltaTime);
 
 	// 점수 보여주는 함수.
 	void ShowScore();

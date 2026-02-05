@@ -28,6 +28,17 @@ void Player::Tick(float deltaTime)
 {
     super::Tick(deltaTime);
 
+    //char buffer[256] = {};
+    //sprintf_s(
+    //    buffer,
+    //    256,
+    //    "player: (%d, %d)",
+    //    position.x,
+    //    position.y
+    //);
+
+    //ChangeImage(buffer);
+
     // 종료 처리.
     if (Input::Get().GetKeyDown(VK_ESCAPE))
     {

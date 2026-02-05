@@ -50,7 +50,7 @@ void EnemySpawner::SpawnEnemy(float deltaTime)
 	int index = Util::Random(0, length - 1);
 
 	// 생성 y 위치.
-	int yPosition = Util::Random(1, 10);
+	//int yPosition = Util::Random(1, 10);
 
 	// 적 생성 요청.
 	GetOwner()->AddNewActor(

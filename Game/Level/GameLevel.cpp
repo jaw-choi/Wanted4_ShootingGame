@@ -31,6 +31,7 @@ void GameLevel::Tick(float deltaTime)
 	// 충돌 판정 처리.
 	ProcessCollisionPlayerBulletAndEnemy();
 	ProcessCollisionPlayerAndEnemyBullet();
+	ProcessAstarAlgorithmPlayerAndEnemy(deltaTime);
 }
 
 void GameLevel::Draw()
@@ -158,4 +159,48 @@ void GameLevel::ShowScore()
 		scoreString,
 		Vector2(0, Engine::Get().GetHeight() - 1)
 	);
+}
+
+void GameLevel::ProcessAstarAlgorithmPlayerAndEnemy(float deltaTime)
+{
+    // 플레이어 탄약과 적 액터 필터링.
+    Player* player = nullptr;
+    std::vector<Enemy*> enemies;
+
+    // 액터 필터링.
+    for (Actor* const actor : actors)
+    {
+	if (!player && actor->IsTypeOf<Player>())
+	{
+	    player = actor->As<Player>();
+	    continue;
+	}
+
+	if (actor->IsTypeOf<Enemy>())
+	{
+	    enemies.emplace_back(actor->As<Enemy>());
+	}
+    }
+
+    // 판정 안해도 되는지 확인.
+    if (!player || enemies.size() == 0)
+    {
+	return;
+    }
+
+
+    // 충돌 판정.
+    for (Actor* const enemy : enemies)
+    {
+	//A* algorithm 계산
+
+	//actor -> Enemy 다운캐스팅 체크
+	//Enemy* ptrEnemy = dynamic_cast<Enemy*>(enemy);
+	//위와 같은 효과
+	if (enemy->IsTypeOf<Enemy>())
+	{
+	    // Tick 마다 각 enemy에게 player 좌표 전달 
+	    static_cast<Enemy*>(enemy)->MoveTo(*player, deltaTime);
+	}
+    }
 }
