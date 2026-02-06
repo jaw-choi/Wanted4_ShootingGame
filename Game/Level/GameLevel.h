@@ -21,6 +21,7 @@ private:
 
 	// 충돌 판정 처리 함수.
 	void ProcessCollisionPlayerBulletAndEnemy();
+	void ProcessCollisionPlayerAndEnemy();
 	void ProcessCollisionPlayerAndEnemyBullet();
 	void ProcessAstarAlgorithmPlayerAndEnemy();
 

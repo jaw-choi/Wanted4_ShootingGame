@@ -67,7 +67,8 @@ namespace Wanted
 	bool Actor::TestIntersect(const Actor* const other)
 	{
 		// AABB (Axis Aligned Bounding Box).
-		// x 좌표만 고려하면됨. y는 크기가 1이기 때문.
+		// x 좌표만 고려하면됨. y는 크기가 1이기 때문. 
+		// Todo: =>y축 높아지면 고려해야함
 
 		// 자기자신의 x좌표 정보.
 		int xMin = position.x;

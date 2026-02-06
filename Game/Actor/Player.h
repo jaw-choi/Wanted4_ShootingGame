@@ -21,7 +21,10 @@ public:
 	Player();
 	~Player();
 public:
+    //가장 가까운 적에게 발사
     void AutoFireAt(const Actor& target);
+
+    //마우스 포인터 쪽으로 발사
     void AutoFireAtMouse();
 private:
 	virtual void Tick(float deltaTime) override;

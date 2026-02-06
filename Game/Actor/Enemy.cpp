@@ -38,21 +38,22 @@ void Enemy::Tick(float deltaTime)
 	    static_cast<int>(currPos.y)
 	));
 
-	// 발사 타이머 업데이트.
-	timer.Tick(deltaTime);
-	if (!timer.IsTimeOut())
-	{
-		return;
-	}
+	// Todo: 보스 enemy에 적용예정
+	//// 발사 타이머 업데이트.
+	//timer.Tick(deltaTime);
+	//if (!timer.IsTimeOut())
+	//{
+	//	return;
+	//}
 
-	// 타이머 리셋.
-	timer.Reset();
+	//// 타이머 리셋.
+	//timer.Reset();
 
-	// 탄약 발사.
-	GetOwner()->AddNewActor(new EnemyBullet(
-		Vector2(position.x + width / 2, position.y + height / 2),
-		Util::RandomRange(10.0f, 20.0f)
-	));
+	//// 탄약 발사.
+	//GetOwner()->AddNewActor(new EnemyBullet(
+	//	Vector2(position.x + width / 2, position.y + height / 2),
+	//	Util::RandomRange(10.0f, 20.0f)
+	//));
 }
 
 void Enemy::OnDamaged()
