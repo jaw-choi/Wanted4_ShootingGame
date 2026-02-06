@@ -33,6 +33,7 @@ void Enemy::Tick(float deltaTime)
 
 	// Enemy 이동
 	currPos = currPos + dir * moveSpeed * deltaTime;
+
 	SetPosition(Vector2(
 	    static_cast<int>(currPos.x),
 	    static_cast<int>(currPos.y)

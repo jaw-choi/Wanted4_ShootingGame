@@ -29,13 +29,13 @@ namespace Wanted
 		}
 
 		// 콘솔 창 크기 지정.
-		SMALL_RECT rect;
-		rect.Left = 0;
-		rect.Top = 0;
-		rect.Right = static_cast<short>(screenSize.x - 1);
-		rect.Bottom = static_cast<short>(screenSize.y - 1);
+		SMALL_RECT bounds;
+		bounds.Left = 0;
+		bounds.Top = 0;
+		bounds.Right = static_cast<short>(screenSize.x - 1);
+		bounds.Bottom = static_cast<short>(screenSize.y - 1);
 
-		if (!SetConsoleWindowInfo(buffer, true, &rect))
+		if (!SetConsoleWindowInfo(buffer, true, &bounds))
 		{
 			//DWORD errorCode = GetLastError();
 			std::cerr << "Failed to set console window info.\n";
