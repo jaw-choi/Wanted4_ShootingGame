@@ -4,6 +4,7 @@
 #include "Engine/Engine.h"
 #include "Level/Level.h"
 #include "Render/Renderer.h"
+#include <iostream>
 
 Player::Player()
     : super("<=A=>", Vector2::Zero, Color::Green), playerStats(100, 100, 0.2f, 1), exp(0), currFullExp(10)
@@ -28,6 +29,7 @@ void Player::Tick(float deltaTime)
 {
     super::Tick(deltaTime);
 
+    printHp();
      //player 실시간 position 확인 - 디버그 모드 시
     //char buffer[256] = {};
     //sprintf_s(
@@ -204,6 +206,15 @@ bool Player::CanMoveX() const
     // 경과 시간 확인.
     // 발사 간격보다 더 많이 흘렀는지.
     return xPostimer.IsTimeOut();
+}
+
+void Player::printHp()
+{
+    sprintf_s(hpString, 128, "Hp: %d", playerStats.hp);
+    Renderer::Get().Submit(
+        hpString,
+        Vector2(0, Engine::Get().GetHeight() - 2)
+    );
 }
 
 bool Player::CanMoveY() const

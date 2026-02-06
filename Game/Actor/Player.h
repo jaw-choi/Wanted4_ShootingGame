@@ -78,6 +78,7 @@ private:
     bool CanMoveY() const;
     bool CanMoveX() const;
 
+    void printHp();
 
 private:
 
@@ -100,4 +101,7 @@ private:
     Stat playerStats;
     long long exp;
     long long currFullExp;
+
+    char hpString[128] = {};
+
 };
