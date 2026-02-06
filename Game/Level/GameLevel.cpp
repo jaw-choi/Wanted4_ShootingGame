@@ -57,7 +57,8 @@ void GameLevel::Tick(float deltaTime)
 
     // 충돌 판정 처리.
     ProcessCollisionPlayerBulletAndEnemy();
-    ProcessCollisionPlayerAndEnemy();
+    //ProcessCollisionPlayerAndEnemyAABB();
+    ProcessCollisionPlayerAndEnemyQuadTree();
     ProcessCollisionPlayerAndEnemyBullet();
     ProcessAstarAlgorithmPlayerAndEnemy();
 
@@ -139,7 +140,7 @@ void GameLevel::ProcessCollisionPlayerBulletAndEnemy()
     }
 }
 
-void GameLevel::ProcessCollisionPlayerAndEnemy()
+void GameLevel::ProcessCollisionPlayerAndEnemyAABB()
 {
     // 플레이어와 적 액터 필터링.
     Player* player = nullptr;
@@ -191,6 +192,60 @@ void GameLevel::ProcessCollisionPlayerAndEnemy()
         }
     }
 }
+
+void GameLevel::ProcessCollisionPlayerAndEnemyQuadTree()
+{
+    // 플레이어와 적 액터 필터링.
+    Player* player = nullptr;
+    std::vector<Enemy*> enemies;
+    
+    // 액터 필터링.
+    for (Actor* const actor : actors)
+    {
+        if (!player && actor->IsTypeOf<Player>())
+        {
+            player = actor->As<Player>();
+            continue;
+        }
+
+        if (actor->IsTypeOf<Enemy>())
+        {
+            enemies.emplace_back(actor->As<Enemy>());
+        }
+    }
+
+    // 판정 안해도 되는지 확인.
+    if (!player || enemies.size() == 0)
+    {
+        return;
+    }
+
+    // 충돌 판정.
+    for (Actor* const enemy : enemies)
+    {
+        if (enemy->TestIntersect(player))
+        {
+            //player의 Hp 감소
+            //충돌 시 TakeDamage
+            player->TakeDamage(static_cast<Enemy*>(enemy)->GetAttackPower());
+
+            //// 플레이어 죽음 설정.
+            if (player->IsDead()) {
+                isPlayerDead = true;
+                // 죽은 위치 저장.
+                playerDeadPosition = player->GetPosition();
+
+                // 액터 제거 처리.
+                player->Destroy();
+
+            }
+
+            //enemy->Destroy();
+            //break;
+        }
+    }
+}
+
 
 
 void GameLevel::ProcessCollisionPlayerAndEnemyBullet()

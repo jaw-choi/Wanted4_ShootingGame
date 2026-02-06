@@ -2,6 +2,7 @@
 
 #include "Level/Level.h"
 #include "Math/Vector2.h"
+#include "Math/QuadTree.h"
 
 using namespace Wanted;
 
@@ -14,16 +15,19 @@ public:
 	GameLevel();
 	~GameLevel();
 
+	QuadTree* GetQuadtree() const { return quadtree; }
 private:
 
 	virtual void Tick(float deltaTime) override;
 	virtual void Draw() override;
 
+	//Quadtree
 	void PrintFPS(float deltaTime);
 
 	// 충돌 판정 처리 함수.
 	void ProcessCollisionPlayerBulletAndEnemy();
-	void ProcessCollisionPlayerAndEnemy();
+	void ProcessCollisionPlayerAndEnemyAABB();
+	void ProcessCollisionPlayerAndEnemyQuadTree();
 	void ProcessCollisionPlayerAndEnemyBullet();
 	void ProcessAstarAlgorithmPlayerAndEnemy();
 
@@ -31,6 +35,9 @@ private:
 	void ShowScore();
 
 private:
+	//QuadTree
+	QuadTree* quadtree;
+
 	// 점수 변수.
 	int score = 0;
 

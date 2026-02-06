@@ -1,9 +1,11 @@
 ﻿#pragma once
+
 #include <vector>
 #include "Common/Common.h"
 #include "Rect.h"
+#include "Actor/Actor.h"
 
-class Actor;
+//class Actor;
 
 namespace Wanted
 {
