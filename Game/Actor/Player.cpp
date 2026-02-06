@@ -6,8 +6,7 @@
 #include "Render/Renderer.h"
 
 Player::Player()
-    : super("<=A=>", Vector2::Zero, Color::Green),
-    fireMode(FireMode::OneShot)
+    : super("<=A=>", Vector2::Zero, Color::Green), playerStats(100, 100, 0.2f, 1), exp(0), currFullExp(10)
 {
     // 생성 위치 설정.
     int xPosition = (Engine::Get().GetWidth() / 2) - (width / 2);
@@ -23,6 +22,7 @@ Player::Player()
 Player::~Player()
 {
 }
+
 
 void Player::Tick(float deltaTime)
 {
@@ -129,7 +129,6 @@ void Player::MoveUp()
 void Player::Fire(Vector2f dir)
 {
     // 경과 시간 초기화.
-    //elapsedTime = 0.0f;
     timer.Reset();
 
     // 생성 위치 설정.
@@ -142,17 +141,6 @@ void Player::Fire(Vector2f dir)
     GetOwner()->AddNewActor(new PlayerBullet(bulletPosition,dir));
 }
 
-//void Player::FireInterval()
-//{
-//    // 발사 가능 여부 확인.
-//    if (!CanShoot())
-//    {
-//        return;
-//    }
-//
-//    // 발사.
-//    //Fire();
-//}
 
 void Player::MoveRightInterval()
 {
@@ -223,6 +211,39 @@ bool Player::CanMoveY() const
     // 경과 시간 확인.
     // 발사 간격보다 더 많이 흘렀는지.
     return yPostimer.IsTimeOut();
+}
+
+void Player::TakeDamage(int amount)
+{
+    playerStats.hp -= amount;
+    //TODO: hit effect -> white>red>white
+}
+
+void Player::AddExperience(long long expAmount)
+{
+    exp += expAmount;
+    if (IsExpFull())
+        LevelUp();
+}
+
+bool Player::IsDead() const
+{
+    return playerStats.hp <= 0;
+}
+
+bool Player::IsExpFull() const
+{
+    return exp >= currFullExp;
+}
+
+void Player::LevelUp()
+{
+    // exp 0으로 만들기
+    exp = 0;
+    // currFullExp 다음 단계로 올리기
+    currFullExp = (long long)((float)currFullExp * 1.2f);
+    // Todo:UI 나오게하기.
+
 }
 
 // Level에서 매 tick 불림

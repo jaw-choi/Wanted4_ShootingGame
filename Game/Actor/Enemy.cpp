@@ -7,7 +7,7 @@
 
 
 Enemy::Enemy(const char* image)
-    : super(image)
+    : super(image), enemyStats(10, 10, 6.f, 1)
 {
     int random = Util::Random(0, 10);
     std::vector<Vector2> positions = { {0,0},
@@ -54,6 +54,16 @@ void Enemy::Tick(float deltaTime)
 	//	Vector2(position.x + width / 2, position.y + height / 2),
 	//	Util::RandomRange(10.0f, 20.0f)
 	//));
+}
+
+void Enemy::TakeDamage(int amount)
+{
+    enemyStats.hp -= amount;
+}
+
+bool Enemy::IsDead() const
+{
+    return enemyStats.hp <= 0;
 }
 
 void Enemy::OnDamaged()
