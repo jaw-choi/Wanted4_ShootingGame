@@ -26,6 +26,31 @@ GameLevel::~GameLevel()
 {
 }
 
+void GameLevel::PrintFPS(float deltaTime)
+{
+  static double accumTime = 0.0;
+    static int frameCount = 0;
+    static double cachedFps = 0.0;
+
+    accumTime += deltaTime;
+    frameCount++;
+
+    if (accumTime >= 0.01)
+    {
+        cachedFps = (double)frameCount / accumTime;
+        accumTime = 0.0;
+        frameCount = 0;
+    }
+
+    static char fpsString[128]; // ★ 핵심: static
+    sprintf_s(fpsString, 128, "FPS: %.1f  dt: %.4f", cachedFps, deltaTime);
+
+    Renderer::Get().Submit(
+        fpsString,
+        Vector2(0, Engine::Get().GetHeight() - 3)
+    );
+}
+
 void GameLevel::Tick(float deltaTime)
 {
     super::Tick(deltaTime);
@@ -35,6 +60,11 @@ void GameLevel::Tick(float deltaTime)
     ProcessCollisionPlayerAndEnemy();
     ProcessCollisionPlayerAndEnemyBullet();
     ProcessAstarAlgorithmPlayerAndEnemy();
+
+
+    ///
+    PrintFPS(deltaTime);
+    //
 }
 
 void GameLevel::Draw()

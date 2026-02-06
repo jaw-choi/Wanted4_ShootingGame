@@ -12,7 +12,7 @@ Enemy::Enemy(const char* image)
     int random = Util::Random(0, 10);
     std::vector<Vector2> positions = { {0,0},
 	{Engine::Get().GetWidth() - width - 1,0},
-	{0,Engine::Get().GetHeight() - height - 1},
+	{0,Engine::Get().GetHeight() - height - 4},
 	{Engine::Get().GetWidth() - width - 1,Engine::Get().GetHeight() - height - 1} };
 
     // 이동 방향에 따른 적 위치 설정.

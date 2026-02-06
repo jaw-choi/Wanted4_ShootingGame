@@ -19,6 +19,8 @@ private:
 	virtual void Tick(float deltaTime) override;
 	virtual void Draw() override;
 
+	void PrintFPS(float deltaTime);
+
 	// 충돌 판정 처리 함수.
 	void ProcessCollisionPlayerBulletAndEnemy();
 	void ProcessCollisionPlayerAndEnemy();
