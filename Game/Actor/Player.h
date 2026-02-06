@@ -84,10 +84,9 @@ private:
 
     // 타이머 변수.
     Timer timer;
-
-    // 타이머 변수.
     Timer yPostimer;
     Timer xPostimer;
+    Timer hpTimer;
 
 private:
     // 연사 시간 간격.
@@ -96,6 +95,10 @@ private:
     // 연속 이동 시간 간격. 
     float moveXInterval = 0.2f;
     float moveYInterval = 0.2f;
+
+    // 피격 시 무적 시간.
+    float invincibilityTime = 1.f;
+
 
     // 플레이어 스탯.
     Stat playerStats;

@@ -18,6 +18,7 @@ Player::Player()
     timer.SetTargetTime(fireInterval);
     xPostimer.SetTargetTime(moveXInterval);
     yPostimer.SetTargetTime(moveYInterval);
+    hpTimer.SetTargetTime(invincibilityTime);
 }
 
 Player::~Player()
@@ -53,6 +54,7 @@ void Player::Tick(float deltaTime)
     timer.Tick(deltaTime);
     xPostimer.Tick(deltaTime);
     yPostimer.Tick(deltaTime);
+    hpTimer.Tick(deltaTime);
     // 좌우 방향키 입력처리.
     if (Input::Get().GetKey('A') || Input::Get().GetKey(VK_LEFT))
     {
@@ -219,6 +221,7 @@ void Player::printHp()
 
 bool Player::CanMoveY() const
 {
+    
     // 경과 시간 확인.
     // 발사 간격보다 더 많이 흘렀는지.
     return yPostimer.IsTimeOut();
@@ -226,6 +229,11 @@ bool Player::CanMoveY() const
 
 void Player::TakeDamage(int amount)
 {
+    if (!hpTimer.IsTimeOut())
+    {
+        return;
+    }
+    hpTimer.Reset();
     playerStats.hp -= amount;
     //TODO: hit effect -> white>red>white
 }
