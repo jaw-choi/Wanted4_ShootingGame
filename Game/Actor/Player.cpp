@@ -4,10 +4,11 @@
 #include "Engine/Engine.h"
 #include "Level/Level.h"
 #include "Render/Renderer.h"
+#include <algorithm>
 #include <iostream>
 
 Player::Player()
-    : super("<=A=>", Vector2::Zero, Color::Green), playerStats(1, 100, 0.2f, 1), exp(0), currFullExp(10)
+    : super("<=A=>", Vector2::Zero, Color::Green), playerStats(10, 10, 0.2f, 1), exp(0), currFullExp(10), level(1)
 {
     // 생성 위치 설정.
     int xPosition = (Engine::Get().GetWidth() / 2) - (width / 2);
@@ -19,6 +20,7 @@ Player::Player()
     xPostimer.SetTargetTime(moveXInterval);
     yPostimer.SetTargetTime(moveYInterval);
     hpTimer.SetTargetTime(invincibilityTime);
+    sortingOrder = 5;
 }
 
 Player::~Player()
@@ -31,6 +33,9 @@ void Player::Tick(float deltaTime)
     super::Tick(deltaTime);
 
     printHp();
+    printExp();
+    DrawExpStars(exp,currFullExp);
+    DrawHp(GetCurrentHP(), GetMaxHP());
      //player 실시간 position 확인 - 디버그 모드 시
     //char buffer[256] = {};
     //sprintf_s(
@@ -219,6 +224,16 @@ void Player::printHp()
     );
 }
 
+void Player::printExp()
+{
+    sprintf_s(expString, 128, "Level: %d",level);
+    Renderer::Get().Submit(
+        expString,
+        Vector2(0, Engine::Get().GetHeight() - 4)
+    );
+}
+
+
 bool Player::CanMoveY() const
 {
     
@@ -242,7 +257,11 @@ void Player::AddExperience(long long expAmount)
 {
     exp += expAmount;
     if (IsExpFull())
-        LevelUp();
+    {
+        int remain = 0;
+        remain = exp % currFullExp;
+        LevelUp(remain);
+    }
 }
 
 bool Player::IsDead() const
@@ -255,14 +274,13 @@ bool Player::IsExpFull() const
     return exp >= currFullExp;
 }
 
-void Player::LevelUp()
+void Player::LevelUp(int remain)
 {
     // exp 0으로 만들기
-    exp = 0;
+    exp = remain;
     // currFullExp 다음 단계로 올리기
     currFullExp = (long long)((float)currFullExp * 1.2f);
-    // Todo:UI 나오게하기.
-
+    ++level;
 }
 
 // Level에서 매 tick 불림
@@ -289,4 +307,71 @@ void Player::AutoFireAtMouse()
     Vector2f dir = Vector2f((Vector2f)Input::Get().MousePosition() - (Vector2f)GetPosition()).Normalized();
 
     Fire(dir);
+}
+
+static double Clamp01(double v)
+{
+    if (v < 0.0) return 0.0;
+    if (v > 1.0) return 1.0;
+    return v;
+}
+
+
+void Player::DrawExpStars(int exp, int currFullExp)
+{
+    const int screenW = Engine::Get().GetWidth();
+    if (screenW <= 0) return;
+
+    // 버퍼 오버런 방지: 화면폭을 버퍼 크기-1로 제한
+    const int bufW = min(screenW, (int)sizeof(expBarString) - 1);
+
+    double ratio = 0.0;
+    if (currFullExp > 0)
+        ratio = Clamp01((double)exp / (double)currFullExp);
+
+    int filled = (int)std::floor(ratio * bufW);
+    if (filled < 0) filled = 0;
+    if (filled > bufW) filled = bufW;
+
+    // 1) 먼저 공백으로 줄 전체 채움
+    memset(expBarString, ' ', bufW);
+
+    // 2) 채워진 만큼만 별로 덮어쓰기
+    memset(expBarString, '*', filled);
+
+    // 3) 널 종료
+    expBarString[bufW] = '\0';
+
+    // 4) 화면 상단 출력
+    Renderer::Get().Submit(expBarString, Vector2(0, 0),Color::Blue,2);
+}
+
+
+void Player::DrawHp(int hp, int fullHp)
+{
+    const int screenW = Engine::Get().GetWidth();
+    if (screenW <= 0) return;
+
+    // 버퍼 오버런 방지: 화면폭을 버퍼 크기-1로 제한
+    const int bufW = min(screenW, (int)sizeof(hpBarString) - 1);
+
+    double ratio = 0.0;
+    if (fullHp > 0)
+        ratio = Clamp01((double)hp / (double)fullHp);
+
+    int filled = (int)std::floor(ratio * bufW);
+    if (filled < 0) filled = 0;
+    if (filled > bufW) filled = bufW;
+
+    // 1) 먼저 공백으로 줄 전체 채움
+    memset(hpBarString, ' ', bufW);
+
+    // 2) 채워진 만큼만 별로 덮어쓰기
+    memset(hpBarString, '*', filled);
+
+    // 3) 널 종료
+    hpBarString[bufW] = '\0';
+
+    // 4) 화면 상단 출력
+    Renderer::Get().Submit(hpBarString, Vector2(0, 1), Color::Red,2);
 }

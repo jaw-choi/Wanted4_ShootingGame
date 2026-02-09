@@ -94,6 +94,7 @@
     <ClCompile Include="Actor\EnemyBullet.cpp" />
     <ClCompile Include="Actor\EnemyDestroyEffect.cpp" />
     <ClCompile Include="Actor\EnemySpawner.cpp" />
+    <ClCompile Include="Actor\ExpGem.cpp" />
     <ClCompile Include="Actor\MouseTester.cpp" />
     <ClCompile Include="Actor\Player.cpp" />
     <ClCompile Include="Actor\PlayerBullet.cpp" />
@@ -106,6 +107,7 @@
     <ClInclude Include="Actor\EnemyBullet.h" />
     <ClInclude Include="Actor\EnemyDestroyEffect.h" />
     <ClInclude Include="Actor\EnemySpawner.h" />
+    <ClInclude Include="Actor\ExpGem.h" />
     <ClInclude Include="Actor\MouseTester.h" />
     <ClInclude Include="Actor\Player.h" />
     <ClInclude Include="Actor\PlayerBullet.h" />

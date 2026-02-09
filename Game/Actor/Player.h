@@ -38,7 +38,7 @@ public:
     void AddExperience(long long expAmount);
     bool IsDead() const;
     bool IsExpFull() const;
-    void LevelUp();
+    void LevelUp(int remain);
 
 public:
     //가장 가까운 적에게 발사
@@ -47,7 +47,12 @@ public:
     //마우스 포인터 쪽으로 발사
     void AutoFireAtMouse();
 
+    //Exp UI
+    void DrawExpStars(int exp, int currFullExp);
+    void DrawHp(int hp,int fullHp);
+
 private:
+
     virtual void Tick(float deltaTime) override;
 
     // 오른쪽으로 이동하는 함수.
@@ -79,6 +84,7 @@ private:
     bool CanMoveX() const;
 
     void printHp();
+    void printExp();
 
 private:
 
@@ -104,7 +110,11 @@ private:
     Stat playerStats;
     long long exp;
     long long currFullExp;
+    int level;
 
     char hpString[128] = {};
+    char expString[128] = {};
+    char expBarString[128] = {};
+    char hpBarString[128] = {};
 
 };

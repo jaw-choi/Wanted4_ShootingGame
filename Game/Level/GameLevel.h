@@ -30,6 +30,7 @@ private:
 	void ProcessCollisionPlayerBulletAndEnemy();
 	void ProcessCollisionPlayerAndEnemyAABB();
 	void ProcessCollisionPlayerAndEnemyQuadTree();
+	void ProcessCollisionPlayerAndExpGemQuadTree();
 	void ProcessCollisionPlayerAndEnemyBullet();
 	void ProcessAstarAlgorithmPlayerAndEnemy();
 

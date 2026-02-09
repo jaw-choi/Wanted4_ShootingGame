@@ -5,22 +5,43 @@
 #include "Actor/EnemyBullet.h"
 #include "Actor/EnemyDestroyEffect.h"
 #include "Actor/Player.h"
+#include "Actor/ExpGem.h"
 
 #include "Level/GameLevel.h"
 #include "Math/QuadTree.h"
 
+
+
 Enemy::Enemy(const char* image)
     : super(image), enemyStats(10, 10, 6.f, 1)
 {
-    int random = Util::Random(0, 10);
-    std::vector<Vector2> positions = { {0,0},
-        {Engine::Get().GetWidth() - width - 1,0},
-        {0,Engine::Get().GetHeight() - height - 4},
-        {Engine::Get().GetWidth() - width - 1,Engine::Get().GetHeight() - height - 1} };
+    int random = Util::Random(0, 15);
+    
+    int screenW = Engine::Get().GetWidth();
+    int screenH = Engine::Get().GetHeight();
+
+    int maxX = screenW - width - 1;
+    int maxY = screenH - height - 1;
+
+    // UI 때문에 아래쪽/위쪽을 비워야 하면 여기에서 조정하세요.
+    // 예: 하단 UI 4줄을 비우는 경우
+    int uiBottomMargin = 4;
+    maxY = screenH - height - uiBottomMargin;
+
+    int midX = maxX / 2;
+    int midY = maxY / 2;
+
+    std::vector<Vector2> positions =
+    {
+        {0, 0},        {midX, 0},        {maxX, 0},
+        {0, midY},                       {maxX, midY},
+        {0, maxY},     {midX, maxY},     {maxX, maxY },
+    };
+
 
     // 이동 방향에 따른 적 위치 설정.
-    currPos.x = (float)positions[random % 4].x;
-    currPos.y = (float)positions[random % 4].y;
+    currPos.x = (float)positions[random % 8].x;
+    currPos.y = (float)positions[random % 8].y;
     dir = Vector2f::Zero;
     // 발사 타이머 목표 시간 설정.
     timer.SetTargetTime(Util::RandomRange(1.0f, 3.0f));
@@ -123,6 +144,9 @@ void Enemy::OnDamaged()
 
     // 이펙트 생성 (재생을 위해).
     GetOwner()->AddNewActor(new EnemyDestroyEffect(position));
+
+    //Exp 생성
+    GetOwner()->AddNewActor(new ExpGem(position));
 }
 
 void Enemy::MoveTo(const Actor& target)

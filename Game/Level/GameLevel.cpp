@@ -5,6 +5,7 @@
 #include "Actor/EnemyBullet.h"
 #include "Actor/EnemySpawner.h"
 #include "Actor/MouseTester.h"
+#include "Actor/ExpGem.h"
 #include "Render/Renderer.h"
 #include "Engine/Engine.h"
 
@@ -79,6 +80,7 @@ void GameLevel::Tick(float deltaTime)
     ProcessCollisionPlayerBulletAndEnemy();
     //ProcessCollisionPlayerAndEnemyAABB();
     ProcessCollisionPlayerAndEnemyQuadTree();
+    ProcessCollisionPlayerAndExpGemQuadTree();
     ProcessCollisionPlayerAndEnemyBullet();
     ProcessAstarAlgorithmPlayerAndEnemy();
 
@@ -258,6 +260,43 @@ void GameLevel::ProcessCollisionPlayerAndEnemyQuadTree()
             }
         }
     }
+}
+
+void GameLevel::ProcessCollisionPlayerAndExpGemQuadTree()
+{
+    // 플레이어와 적 액터 필터링.
+    Player* player = nullptr;
+    std::vector<Actor*> otherActors;
+
+    // 액터 필터링.
+    for (Actor* const actor : actors)
+    {
+        // player actor 찾기
+        if (!player && actor->IsTypeOf<Player>())
+        {
+            player = actor->As<Player>();
+            continue;
+        }
+    }
+
+    if (quadtree && player)
+    {
+        // Query로 tree에서 Enemy들에 대한 정보를 가져옴
+        quadtree->Query(otherActors, player);
+        for (Actor* const actor : otherActors)
+        {
+            if (actor->IsTypeOf<ExpGem>())
+            {
+                if (actor->TestIntersect(player))
+                {
+                    //충돌 시 Get Exp and destroy Exp
+                    player->AddExperience(3);
+                    actor->Destroy();
+                }
+            }
+        }
+    }
+
 }
 
 
