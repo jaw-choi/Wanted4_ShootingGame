@@ -4,6 +4,7 @@
 #include "Actor/Player.h"
 #include "Level/Level.h"
 #include "Level/GameLevel.h"
+#include "Util/Util.h"
 
 LevelUpOverlay::LevelUpOverlay(Player* _player)
     : player(_player)
@@ -19,7 +20,7 @@ void LevelUpOverlay::Tick(float deltaTime)
     super::Tick(deltaTime);
 
     ShowLevelUpUI();
-    const int length = (int)choices.size();
+    const int length = 3;
     if (length <= 0) return;
 
     if (Input::Get().GetKeyDown(VK_UP))
@@ -40,18 +41,17 @@ void LevelUpOverlay::Tick(float deltaTime)
 
 void LevelUpOverlay::Draw()
 {
-    Renderer::Get().Submit("LEVEL UP! Choose one:", Vector2(0, 0), Color::Red);
+    Renderer::Get().Submit("LEVEL UP! Choose one:", Vector2(Engine::Get().GetWidth()/2, 0), Color::Red);
 
     int currentY = 2; // 시작 위치
 
-    for (int i = 0; i < (int)choices.size(); ++i)
+    for (int i = 0; i < 3; ++i)
     {
         Color col = (i == currentIndex) ? selectedColor : unselectedColor;
         //Renderer::Get().SubmitFromFile(choices[i].text, Vector2(0, 2 + i), col, 10);
         // SubmitFromFile이 파일의 줄 수만큼 계산된 '다음 Y 좌표'를 반환함
-        currentY = Renderer::Get().SubmitFromFile(choices[i].text, Vector2(0, currentY), col, 10);
+        currentY = Renderer::Get().SubmitFromFile(choices[i].text, Vector2(Engine::Get().GetWidth() / 4, currentY), col, 10);
 
-        // 만약 선택지 사이에 간격을 두고 싶다면 currentY++ 등을 추가할 수 있습니다.
          currentY += 1;
     }
 }
@@ -60,6 +60,7 @@ void LevelUpOverlay::ShowLevelUpUI()
 {
     if (finished)
         return;
+    //int random = Util::Random(0, 15);
 
     //dynamic_cast<GameLevel*>(GetOwner())->ShowLevelUpUI();
 
@@ -87,6 +88,20 @@ void LevelUpOverlay::ShowLevelUpUI()
             player->AddExperience(1);
         }
         });
+    choices.push_back({
+    "../Assets/choice3.txt",
+    [this]()
+    {
+        player->AddExperience(1);
+    }
+        });
+    //shuffle
+    for (int i = (int)choices.size() - 1; i > 0; --i)
+    {
+        int j = Util::Random(0, i);
+        std::swap(choices[i], choices[j]);
+    }
+
     finished = !finished;
 }
 
