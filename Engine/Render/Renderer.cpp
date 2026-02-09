@@ -1,6 +1,9 @@
 ﻿#include "Renderer.h"
 #include "ScreenBuffer.h"
 #include "Util/Util.h"
+#include <string>
+#include <fstream>
+#include <sstream>
 
 namespace Wanted
 {
@@ -249,6 +252,39 @@ namespace Wanted
 		    lineOffsetY++;
 		}
 	    }
+	}
+
+	int Renderer::SubmitFromFile(const std::string& filePath, const Vector2& position, Color color, int sortingOrder)
+	{
+	    std::ifstream file(filePath);
+	    if (!file.is_open()) {
+		// 파일 열기 실패 시 로그 출력 (이전 단계의 로그 로직 활용)
+		return position.y; // 실패 시 현재 위치 그대로 반환
+	    }
+
+	    std::string content;
+	    int lineCount = 0;
+	    std::string line;
+
+	    // 파일을 줄 단위로 읽으면서 줄 수 계산
+	    std::stringstream buffer;
+	    while (std::getline(file, line)) {
+		buffer << line << "\n";
+		lineCount++; // 줄 수 카운트
+	    }
+	    content = buffer.str();
+
+	    // 메모리 수명 보장을 위해 보관
+	    stringBuffer.push_back(content);
+
+	    // 기존 Submit 호출 (줄바꿈 처리 로직이 포함된 버전)
+	    this->Submit(stringBuffer.back().c_str(), position, color, sortingOrder);
+
+	    file.close();
+
+	    // 다음 텍스트가 시작되어야 할 Y 좌표 반환
+	    return position.y + lineCount;
+
 	}
 	
 	void Renderer::PresentImmediately()

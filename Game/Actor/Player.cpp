@@ -11,7 +11,7 @@
 #include <iostream>
 
 Player::Player()
-    : super("<=A=>", Vector2::Zero, Color::Green), playerStats(10, 10, 0.2f, 1), exp(0), currFullExp(10), level(1)
+    : super("<+A+>", Vector2::Zero, Color::Green), playerStats(10, 10, 0.2f, 1), exp(0), currFullExp(10), level(1)
 {
     // 생성 위치 설정.
     int xPosition = (Engine::Get().GetWidth() / 2) - (width / 2);

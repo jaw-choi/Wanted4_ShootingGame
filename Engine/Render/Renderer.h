@@ -4,6 +4,7 @@
 #include "Math/Color.h"
 #include <Windows.h>
 #include <vector>
+#include <string>
 
 namespace Wanted
 {
@@ -62,6 +63,14 @@ namespace Wanted
 			int sortingOrder = 0
 		);
 
+		// 경로를 받아서 제출하는 함수 overloading
+		int SubmitFromFile(
+		    const std::string& filePath, // .txt 파일 경로
+		    const Vector2& position,
+		    Color color = Color::White,
+		    int sortingOrder = 0
+		);
+
 		// 즉시 화면에 표시할 때 사용.
 		void PresentImmediately();
 
@@ -95,6 +104,8 @@ namespace Wanted
 		// 렌더 큐 (씬의 모든 그리기 명령을 모아두는 배열).
 		std::vector<RenderCommand> renderQueue;
 
+		// 이번 프레임 동안 파일에서 읽어온 문자열 저장 공간
+		std::vector<std::string> stringBuffer;
 		// 싱글톤 구현을 위한 정적 변수.
 		static Renderer* instance;
 	};

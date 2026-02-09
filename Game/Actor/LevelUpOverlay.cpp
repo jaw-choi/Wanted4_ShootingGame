@@ -40,12 +40,19 @@ void LevelUpOverlay::Tick(float deltaTime)
 
 void LevelUpOverlay::Draw()
 {
-    Renderer::Get().Submit("LEVEL UP!\n Choose one:", Vector2(0, 0), Color::Red);
+    Renderer::Get().Submit("LEVEL UP! Choose one:", Vector2(0, 0), Color::Red);
+
+    int currentY = 2; // 시작 위치
 
     for (int i = 0; i < (int)choices.size(); ++i)
     {
         Color col = (i == currentIndex) ? selectedColor : unselectedColor;
-        Renderer::Get().Submit(choices[i].text, Vector2(0, 2 + i), col, 10);
+        //Renderer::Get().SubmitFromFile(choices[i].text, Vector2(0, 2 + i), col, 10);
+        // SubmitFromFile이 파일의 줄 수만큼 계산된 '다음 Y 좌표'를 반환함
+        currentY = Renderer::Get().SubmitFromFile(choices[i].text, Vector2(0, currentY), col, 10);
+
+        // 만약 선택지 사이에 간격을 두고 싶다면 currentY++ 등을 추가할 수 있습니다.
+         currentY += 1;
     }
 }
 
@@ -57,7 +64,7 @@ void LevelUpOverlay::ShowLevelUpUI()
     //dynamic_cast<GameLevel*>(GetOwner())->ShowLevelUpUI();
 
     choices.push_back({
-        "Max HP +10",
+        "../Assets/choice1.txt",
         [this]()
         {
             player->AddExperience(1);
@@ -66,7 +73,7 @@ void LevelUpOverlay::ShowLevelUpUI()
         });
 
     choices.push_back({
-        "Move Speed +0.2",
+        "../Assets/choice2.txt",
         [this]()
         {
             player->AddExperience(1);
@@ -74,7 +81,7 @@ void LevelUpOverlay::ShowLevelUpUI()
         });
 
     choices.push_back({
-        "Damage +1",
+        "../Assets/choice3.txt",
         [this]()
         {
             player->AddExperience(1);
