@@ -17,7 +17,7 @@ static const char* enemyType[] =
 EnemySpawner::EnemySpawner()
 {
 	// 적 생성 타이머 설정.
-	timer.SetTargetTime(Util::RandomRange(0.0f, 1.5f));
+	timer.SetTargetTime(Util::RandomRange(0.0f, 1.0f));
 }
 
 void EnemySpawner::Tick(float deltaTime)

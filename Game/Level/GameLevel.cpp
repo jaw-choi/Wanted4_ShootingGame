@@ -20,6 +20,8 @@ GameLevel::GameLevel()
 
     // Test: 마우스 테스터 추가.
     AddNewActor(new MouseTester());
+    quadtree = new QuadTree(Rect(0, 0, Engine::Get().GetWidth(), Engine::Get().GetHeight()), 4, 0, 5);
+
 }
 
 GameLevel::~GameLevel()
@@ -51,9 +53,27 @@ void GameLevel::PrintFPS(float deltaTime)
     );
 }
 
+void GameLevel::MakeQuadTree()
+{
+    //quadtree 형성
+    quadtree->Clear();
+
+    // 액터 필터링.
+    for (Actor* const actor : actors)
+    {
+        // 모든 active actor tree에 insert.
+        if (actor->IsActive())
+            quadtree->Insert(actor);
+    }
+
+
+}
 void GameLevel::Tick(float deltaTime)
 {
     super::Tick(deltaTime);
+
+    // QuadTree 생성.
+    MakeQuadTree();
 
     // 충돌 판정 처리.
     ProcessCollisionPlayerBulletAndEnemy();
@@ -195,53 +215,47 @@ void GameLevel::ProcessCollisionPlayerAndEnemyAABB()
 
 void GameLevel::ProcessCollisionPlayerAndEnemyQuadTree()
 {
+
     // 플레이어와 적 액터 필터링.
     Player* player = nullptr;
-    std::vector<Enemy*> enemies;
-    
+    std::vector<Actor*> otherActors;
+
     // 액터 필터링.
     for (Actor* const actor : actors)
     {
+        // player actor 찾기
         if (!player && actor->IsTypeOf<Player>())
         {
             player = actor->As<Player>();
             continue;
         }
-
-        if (actor->IsTypeOf<Enemy>())
-        {
-            enemies.emplace_back(actor->As<Enemy>());
-        }
     }
 
-    // 판정 안해도 되는지 확인.
-    if (!player || enemies.size() == 0)
+    if (quadtree && player)
     {
-        return;
-    }
-
-    // 충돌 판정.
-    for (Actor* const enemy : enemies)
-    {
-        if (enemy->TestIntersect(player))
+        // Query로 tree에서 Enemy들에 대한 정보를 가져옴
+        quadtree->Query(otherActors, player);
+        for (Actor* const actor : otherActors)
         {
-            //player의 Hp 감소
-            //충돌 시 TakeDamage
-            player->TakeDamage(static_cast<Enemy*>(enemy)->GetAttackPower());
+            if (actor->IsTypeOf<Enemy>())
+            {
+                if (actor->TestIntersect(player))
+                {
+                    //player의 Hp 감소
+                    //충돌 시 TakeDamage
+                    player->TakeDamage(static_cast<Enemy*>(actor)->GetAttackPower());
 
-            //// 플레이어 죽음 설정.
-            if (player->IsDead()) {
-                isPlayerDead = true;
-                // 죽은 위치 저장.
-                playerDeadPosition = player->GetPosition();
+                    //// 플레이어 죽음 설정.
+                    if (player->IsDead()) {
+                        isPlayerDead = true;
+                        // 죽은 위치 저장.
+                        playerDeadPosition = player->GetPosition();
 
-                // 액터 제거 처리.
-                player->Destroy();
-
+                        // 액터 제거 처리.
+                        player->Destroy();
+                    }
+                }
             }
-
-            //enemy->Destroy();
-            //break;
         }
     }
 }

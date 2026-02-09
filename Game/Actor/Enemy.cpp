@@ -4,6 +4,7 @@
 #include "Level/Level.h"
 #include "Actor/EnemyBullet.h"
 #include "Actor/EnemyDestroyEffect.h"
+#include "Actor/Player.h"
 
 #include "Level/GameLevel.h"
 #include "Math/QuadTree.h"
@@ -34,53 +35,68 @@ void Enemy::Tick(float deltaTime)
     super::Tick(deltaTime);
 
     // 1. 다음 위치 예측
-    Vector2f desiredPosF = currPos + dir * moveSpeed * deltaTime;
-    Vector2 desiredPos = Vector2(static_cast<int>(desiredPosF.x), static_cast<int>(desiredPosF.y));
+    currPos = currPos + dir * moveSpeed * deltaTime;
+    //Vector2 desiredPos = Vector2(static_cast<int>(desiredPosF.x), static_cast<int>(desiredPosF.y));
 
-    // 2. 쿼드트리를 이용한 충돌 검사
-    bool collisionDetected = false; // 다른 Enemy와 충돌 감지 여부
-    if (GameLevel* gameLevel = dynamic_cast<GameLevel*>(GetOwner()))
-    {
-        if (Wanted::QuadTree* quadtree = gameLevel->GetQuadtree())
-        {
-            std::vector<Actor*> potentialColliders;
-            // 'this'(현재 Enemy) 주변의 충돌 후보들을 쿼드트리에서 가져옴
-            quadtree->Query(potentialColliders, this);
-            
-            for (Actor* otherActor : potentialColliders)
-            {
-                // 1. 자기 자신과의 충돌은 검사하지 않습니다.
-                    // 2. 비활성화된 액터는 충돌 검사에서 제외합니다.
-                    // 3. RTTI_CAST를 사용하여 다른 액터가 'Enemy' 타입인지 확인합니다.
-                if (otherActor != this && otherActor->IsActive() && otherActor->IsTypeOf<Enemy>())
-                {
-                    // 예측된 현재 Enemy의 Bounding Box
-                    Rect selfPredictedBounds(desiredPos.x, desiredPos.y, width, height);
-                    // 다른 Enemy의 현재 Bounding Box
-                    Rect otherEnemyBounds(otherActor->GetPosition().x, otherActor->GetPosition().y,
-                        otherActor->GetWidth(), otherActor->GetHeight());
+    //// 2. 쿼드트리를 이용한 충돌 검사
+    //bool collisionDetected = false; // 다른 Enemy와 충돌 감지 여부
+    //Actor* collidingEnemy = nullptr;
+    //if (GameLevel* gameLevel = dynamic_cast<GameLevel*>(GetOwner()))
+    //{
+    //    QuadTree* quadtree = gameLevel->GetQuadtree();
+    //    if (quadtree && this)
+    //    {
+    //        std::vector<Actor*> potentialColliders;
+    //        // 'this'(현재 Enemy) 주변의 충돌 후보들을 쿼드트리에서 가져옴
+    //        quadtree->Query(potentialColliders, this);
 
-                    // 두 Bounding Box가 겹치는지 확인 (CheckAABBOverlap 함수 대신 Rect::Intersects)
-                        if (selfPredictedBounds.Intersects(otherEnemyBounds))
-                        {
-                            collisionDetected = true;
-                            // 충돌이 감지되면 이 Enemy는 이동하지 않을 것이므로 더 이상 검사할 필요 없음
-                            break;
-                        }
-                }
-                // Player와의 충돌은 무시하므로 여기에 'else if (RTTI_CAST(Player, otherActor))' 블록
-                //합니다.
-            }
-        }
-    }
+    //        for (Actor* otherActor : potentialColliders)
+    //        {
+    //            // 1. 자기 자신과의 충돌은 검사하지 않음.
+    //                // 2. 비활성화된 액터는 충돌 검사에서 제외.
+    //                // 3. RTTI_CAST를 사용하여 다른 액터가 'Enemy' 타입인지 확인.
+    //            if (otherActor != this && otherActor->IsActive() && otherActor->IsTypeOf<Enemy>())
+    //            {
+    //                // 예측된 현재 Enemy의 Bounding Box
+    //                Rect selfPredictedBounds(desiredPos.x, desiredPos.y, width, height);
+    //                // 다른 Enemy의 현재 Bounding Box
+    //                Rect otherEnemyBounds(otherActor->GetPosition().x, otherActor->GetPosition().y,
+    //                    otherActor->GetWidth(), otherActor->GetHeight());
 
-    // 3. 충돌 여부에 따른 이동 처리
-    if (!collisionDetected) // 다른 Enemy와 충돌하지 않았다면
-    {
-        // 예측된 위치로 실제로 이동합니다.
-        currPos = desiredPosF;
-    }
-    // else: 충돌이 감지되었다면 currPos는 이전 값 그대로 유지되어 이동하지 않습니다.
+    //                // 두 Bounding Box가 겹치는지 확인 (CheckAABBOverlap 함수 대신 Rect::Intersects)
+    //                if (selfPredictedBounds.Intersects(otherEnemyBounds))
+    //                {
+    //                    collisionDetected = true;
+    //                    collidingEnemy = otherActor;
+    //                    // 충돌이 감지되면 이 Enemy는 더 이상 검사할 필요 없음
+    //                    break;
+    //                }
+    //            }
+
+    //        }
+    //    }
+    //}
+
+    //// 3. 충돌 여부에 따른 이동 처리
+    //if (!collisionDetected) // 다른 Enemy와 충돌하지 않았다면
+    //{
+    //    // 예측된 위치로 실제로 이동합니다.
+    //    currPos = desiredPosF;
+    //}
+    //else // 충돌이 감지되었다면, 멈추는 대신 비켜가려는 시도
+    //{
+    //    if (collidingEnemy) // 충돌한 적이 있다면
+    //    {
+    //        // 충돌한 적의 위치를 기준으로 반대 방향으로 분리 벡터를 계산합니다.
+    //        Vector2f separationVector = (currPos - (Vector2f)collidingEnemy->GetPosition()).Normalized();
+    //        // 기존 진행 방향(dir)에 분리 벡터를 살짝 더하여 새로운 방향을 시도합니다.
+    //            // 0.2f는 분리 힘의 강도입니다. 이 값을 조절하여 적절한 움직임을 찾을 수 있습니다.
+    //        dir = (dir + separationVector * 0.2f).Normalized();
+    //        // 변경된 방향으로 이동을 시도합니다.
+    //        currPos = currPos + dir * moveSpeed * deltaTime;
+    //    }
+    //    // else: collidingEnemy가 없는 경우 (예외 상황)에는 이전 값 유지 (멈춤)
+    //}
 
         // 최종 위치를 Actor의 position에 적용합니다.
     SetPosition(Vector2(
@@ -88,31 +104,6 @@ void Enemy::Tick(float deltaTime)
         static_cast<int>(currPos.y)
     ));
 
-
-
-    //// Enemy 이동 //일반 AABB계산
-    //currPos = currPos + dir * moveSpeed * deltaTime;
-    //SetPosition(Vector2(
-    //    static_cast<int>(currPos.x),
-    //    static_cast<int>(currPos.y)
-    //));
-
-    // Todo: 보스 enemy에 적용예정
-    //// 발사 타이머 업데이트.
-    //timer.Tick(deltaTime);
-    //if (!timer.IsTimeOut())
-    //{
-    //	return;
-    //}
-
-    //// 타이머 리셋.
-    //timer.Reset();
-
-    //// 탄약 발사.
-    //GetOwner()->AddNewActor(new EnemyBullet(
-    //	Vector2(position.x + width / 2, position.y + height / 2),
-    //	Util::RandomRange(10.0f, 20.0f)
-    //));
 }
 
 void Enemy::TakeDamage(int amount)

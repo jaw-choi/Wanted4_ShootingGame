@@ -76,49 +76,46 @@ namespace Wanted
     }
     void QuadTree::Insert(Actor* actor)
     {
-        // actor가 null이면 실행 안함
-        if (!actor)
-            return;
+        if (!actor) return;
 
-        // 자식 노드가 존재할 때.
         if (HasNodes())
         {
-            int index = GetIndex(actor);
-            if (index != -1)
+            const int idx = GetIndex(actor);
+            if (idx != -1 && nodes[idx])
             {
-                nodes[index]->Insert(actor);
+                nodes[idx]->Insert(actor);
                 return;
             }
         }
 
-        // 자식 노드가 없거나, 자식 노드에 들어가지 않을때.
         objects.emplace_back(actor);
 
-        // 객체 수가 초과 했을 때 maxDepth가 아니라면 -> 분할.
-        if (objects.size() > capacity && depth < maxDepth)
+        if (objects.size() > static_cast<size_t>(capacity) && depth < maxDepth)
         {
-            // 자식 노드가 존재 하면 분할.
             if (!HasNodes())
                 Split();
 
-            // 현재 노드의 객체들을 자식 노드로 재분배.
-            int i = 0;
+            size_t i = 0;
             while (i < objects.size())
             {
-                int index = GetIndex(objects[i]);
-                if (index != -1)
+                Actor* a = objects[i];
+                const int idx = GetIndex(a);
+
+                if (idx != -1 && nodes[idx])
                 {
-                    nodes[index]->Insert(objects[i]);
-                    //objects.erase(objects.begin() + i);
-                    nodes[index]->Insert(objects[i]);
+                    nodes[idx]->Insert(a);
                     objects[i] = objects.back();
                     objects.pop_back();
+                    // i 증가 없음 (swap된 새 원소 재검사)
                 }
                 else
-                    i++;
+                {
+                    ++i;
+                }
             }
         }
     }
+
     int QuadTree::GetIndex(const Actor* actor) const
     {
         if (HasNodes())
@@ -132,14 +129,6 @@ namespace Wanted
             }
         }
         return -1;
-        //if (HasNodes())
-        //{
-        //    for (int i = 0; i < 4; i++)
-        //    {
-        //        if (bounds.Contains(actor))
-        //            return i;
-        //    }
-        //}
-        //return -1;
+
     }
 }

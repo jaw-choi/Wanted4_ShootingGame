@@ -22,6 +22,8 @@ private:
 	virtual void Draw() override;
 
 	//Quadtree
+	void MakeQuadTree();
+
 	void PrintFPS(float deltaTime);
 
 	// 충돌 판정 처리 함수.
