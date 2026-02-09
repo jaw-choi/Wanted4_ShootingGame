@@ -33,14 +33,14 @@ void LevelUpOverlay::Tick(float deltaTime)
         choices[currentIndex].onSelected();
         HideLevelUpUI();
     }
-
+    
 
     // 보통 레벨업은 강제 선택이라 ESC로 닫기 막는 걸 추천
 }
 
 void LevelUpOverlay::Draw()
 {
-    Renderer::Get().Submit("LEVEL UP! Choose one:", Vector2(0, 0), Color::Red);
+    Renderer::Get().Submit("LEVEL UP!\n Choose one:", Vector2(0, 0), Color::Red);
 
     for (int i = 0; i < (int)choices.size(); ++i)
     {

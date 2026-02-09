@@ -91,48 +91,41 @@ namespace Wanted
 		// 렌더큐 순회하면서 프레임 채우기.
 		for (const RenderCommand& command : renderQueue)
 		{
-			// 화면에 그릴 텍스트가 없으면 건너뜀.
-			if (!command.text)
-			{
-				continue;
-			}
+		    if (!command.text || command.length <= 0) // length 체크로 변경
+		    {
+			continue;
+		    }
 
-			// 세로 기준 화면 벗어났는지 확인.
-			if (command.position.y < 0
-				|| command.position.y >= screenSize.y)
-			{
-				continue;
-			}
+		    // Y축 클리핑
+		    if (command.position.y < 0 || command.position.y >= screenSize.y)
+		    {
+			continue;
+		    }
 
-			// 화면에 그릴 문자열 길이.
-			const int length = static_cast<int>(strlen(command.text));
+		    // [수정] strlen 대신 미리 계산된 command.length 사용
+		    const int length = command.length;
 
-			// 안그려도 되면 건너뜀.
-			if (length <= 0)
-			{
-				continue;
-			}
+		    const int startX = command.position.x;
+		    const int endX = command.position.x + length - 1;
 
-			// x좌표 기준으로 화면에서 벗어났는지 확인.
-			// 위치는 왼쪽 기준: "abcde"
-			const int startX = command.position.x;
-			const int endX = command.position.x + length - 1;
+		    // X축 클리핑 (완전히 벗어난 경우)
+		    if (endX < 0 || startX >= screenSize.x)
+		    {
+			continue;
+		    }
 
-			if (endX < 0 || startX >= screenSize.x)
-			{
-				continue;
-			}
+		    // 화면 내에 그려질 범위 계산
+		    const int visibleStart = startX < 0 ? 0 : startX;
+		    const int visibleEnd = endX >= screenSize.x ? screenSize.x - 1 : endX;
 
-			// 시작 위치.
-			const int visibleStart = startX < 0 ? 0 : startX;
-			const int visibleEnd
-				= endX >= screenSize.x ? screenSize.x - 1 : endX;
 
 			// 문자열 설정.
 			for (int x = visibleStart; x <= visibleEnd; ++x)
 			{
 				// 문자열 안의 문자 인덱스.
 				const int sourceIndex = x - startX;
+
+				if (sourceIndex >= length) break;
 
 				// 프레임 (2차원 문자 배열) 인덱스.
 				const int index
@@ -194,22 +187,70 @@ namespace Wanted
 		GetCurrentBuffer()->Clear();
 	}
 
+	//void Renderer::Submit(
+	//	const char* text,
+	//	const Vector2& position,
+	//	Color color,
+	//	int sortingOrder)
+	//{
+	//	// 렌더 데이터 생성 후 큐에 추가.
+	//	RenderCommand command = {};
+	//	command.text = text;
+	//	command.position = position;
+	//	command.color = color;
+	//	command.sortingOrder = sortingOrder;
+
+	//	renderQueue.emplace_back(command);
+	//}
 	void Renderer::Submit(
-		const char* text,
-		const Vector2& position,
-		Color color,
-		int sortingOrder)
+	    const char* text,
+	    const Vector2& position,
+	    Color color,
+	    int sortingOrder)
 	{
-		// 렌더 데이터 생성 후 큐에 추가.
-		RenderCommand command = {};
-		command.text = text;
-		command.position = position;
-		command.color = color;
-		command.sortingOrder = sortingOrder;
+	    if (!text) return;
 
-		renderQueue.emplace_back(command);
+	    // [핵심 로직] 문자열을 순회하며 줄바꿈(\n) 단위로 쪼개서 Command 생성
+	    // 원본 문자열(text)은 메모리 어딘가에 살아있다고 가정하므로 포인터만 이동시킴.
+
+	    const char* currentPtr = text;
+	    int lineOffsetY = 0;
+
+	    while (*currentPtr)
+	    {
+		// 현재 줄의 시작 지점
+		const char* lineStart = currentPtr;
+		int lineLength = 0;
+
+		// 줄바꿈이나 문자열 끝을 만날 때까지 길이 측정
+		while (*currentPtr && *currentPtr != '\n')
+		{
+		    currentPtr++;
+		    lineLength++;
+		}
+
+		// 내용이 있는 줄만 등록
+		if (lineLength > 0)
+		{
+		    RenderCommand command;
+		    command.text = lineStart;       // 해당 줄의 시작 포인터
+		    command.length = lineLength;    // 계산된 길이 (\n 제외)
+		    command.position = Vector2(position.x, position.y + lineOffsetY);
+		    command.color = color;
+		    command.sortingOrder = sortingOrder;
+
+		    renderQueue.emplace_back(command);
+		}
+
+		// 줄바꿈 문자를 만났다면 건너뛰고 Y 좌표 증가
+		if (*currentPtr == '\n')
+		{
+		    currentPtr++;
+		    lineOffsetY++;
+		}
+	    }
 	}
-
+	
 	void Renderer::PresentImmediately()
 	{
 		Draw();

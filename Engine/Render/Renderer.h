@@ -38,6 +38,8 @@ namespace Wanted
 			// 좌표.
 			Vector2 position;
 
+			size_t length = 0;
+
 			// 색상.
 			Color color = Color::White;
 
