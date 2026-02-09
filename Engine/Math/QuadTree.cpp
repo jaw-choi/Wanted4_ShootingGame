@@ -57,6 +57,99 @@ namespace Wanted
                 returnObjects.emplace_back(obj);
         }
     }
+    void QuadTree::DebugCollectBounds(std::vector<std::string>& out, int maxDepthToPrint, int onlyDepth) const
+    {
+        DebugCollectBoundsRecursive(out, maxDepthToPrint, onlyDepth);
+    }
+
+    void QuadTree::DebugCollectRects(std::vector<DebugRect>& out, int maxDepthToPrint, int onlyDepth) const
+    {
+        DebugCollectRectsRecursive(out, maxDepthToPrint, onlyDepth);
+    }
+
+    void QuadTree::DebugCollectBoundsRecursive(std::vector<std::string>& out, int maxDepthToPrint, int onlyDepth) const
+    {
+        const bool withinMaxDepth = (maxDepthToPrint < 0) || (depth <= maxDepthToPrint);
+        const bool matchesOnlyDepth = (onlyDepth < 0) || (depth == onlyDepth);
+
+        if (withinMaxDepth && matchesOnlyDepth)
+        {
+            char buffer[128] = {};
+            sprintf_s(
+                buffer,
+                128,
+                "[d=%d] x=%d y=%d w=%d h=%d objs=%zu",
+                depth,
+                bounds.x,
+                bounds.y,
+                bounds.width,
+                bounds.height,
+                objects.size()
+            );
+            out.emplace_back(buffer);
+        }
+
+        if (!HasNodes())
+        {
+            return;
+        }
+
+        if (maxDepthToPrint >= 0 && depth >= maxDepthToPrint)
+        {
+            return;
+        }
+
+        if (onlyDepth >= 0 && depth > onlyDepth)
+        {
+            return;
+        }
+
+        for (int i = 0; i < 4; i++)
+        {
+            if (nodes[i])
+            {
+                nodes[i]->DebugCollectBoundsRecursive(out, maxDepthToPrint, onlyDepth);
+            }
+        }
+    }
+
+    void QuadTree::DebugCollectRectsRecursive(std::vector<DebugRect>& out, int maxDepthToPrint, int onlyDepth) const
+    {
+        const bool withinMaxDepth = (maxDepthToPrint < 0) || (depth <= maxDepthToPrint);
+        const bool matchesOnlyDepth = (onlyDepth < 0) || (depth == onlyDepth);
+
+        if (withinMaxDepth && matchesOnlyDepth)
+        {
+            DebugRect entry;
+            entry.bounds = bounds;
+            entry.depth = depth;
+            entry.objectCount = objects.size();
+            out.emplace_back(entry);
+        }
+
+        if (!HasNodes())
+        {
+            return;
+        }
+
+        if (maxDepthToPrint >= 0 && depth >= maxDepthToPrint)
+        {
+            return;
+        }
+
+        if (onlyDepth >= 0 && depth > onlyDepth)
+        {
+            return;
+        }
+
+        for (int i = 0; i < 4; i++)
+        {
+            if (nodes[i])
+            {
+                nodes[i]->DebugCollectRectsRecursive(out, maxDepthToPrint, onlyDepth);
+            }
+        }
+    }
     void QuadTree::Split()
     {
         // 더 이상 쪼갤 의미 없음

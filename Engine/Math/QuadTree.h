@@ -1,6 +1,8 @@
 ﻿#pragma once
 
 #include <vector>
+#include <string>
+#include <cstddef>
 #include "Common/Common.h"
 #include "Rect.h"
 #include "Actor/Actor.h"
@@ -12,6 +14,17 @@ namespace Wanted
     class WANTED_API QuadTree
     {
     public:
+        struct DebugRect
+        {
+            DebugRect()
+                : bounds(0, 0, 0, 0)
+            {
+            }
+            Rect bounds;
+            int depth = 0;
+            size_t objectCount = 0;
+        };
+
         QuadTree(const Rect& bounds, int capacity, int depth, int maxDepth);
         ~QuadTree();
 
@@ -39,8 +52,17 @@ namespace Wanted
 
         // 오브젝트를 받아서 특정 객체와 충돌 할 가능성이 있는 객체들만 반환
         void Query(std::vector<Actor*>& returnObjects, const Actor* actor) const;
+
+        // 디버그: 노드 bounds 문자열 수집
+        void DebugCollectBounds(std::vector<std::string>& out, int maxDepthToPrint = -1, int onlyDepth = -1) const;
+
+        // 디버그: 노드 bounds 사각형 수집
+        void DebugCollectRects(std::vector<DebugRect>& out, int maxDepthToPrint = -1, int onlyDepth = -1) const;
+
     private:
         inline bool HasNodes() const { return nodes[0] != nullptr; }
+        void DebugCollectBoundsRecursive(std::vector<std::string>& out, int maxDepthToPrint, int onlyDepth) const;
+        void DebugCollectRectsRecursive(std::vector<DebugRect>& out, int maxDepthToPrint, int onlyDepth) const;
 
         Rect bounds;
         int capacity;

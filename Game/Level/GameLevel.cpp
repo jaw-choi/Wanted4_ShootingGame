@@ -11,6 +11,7 @@
 #include "Engine/Engine.h"
 
 #include <set>
+#include <algorithm>
 
 GameLevel::GameLevel()
 {
@@ -70,12 +71,43 @@ void GameLevel::MakeQuadTree()
 
 
 }
+
+void GameLevel::UpdateQuadTreeDebugLines()
+{
+    if (!showQuadTreeDebug || !quadtree)
+    {
+        quadDebugLines.clear();
+        quadDebugRects.clear();
+        quadDebugRenderStrings.clear();
+        return;
+    }
+
+    quadDebugLines.clear();
+    quadDebugRects.clear();
+    quadDebugRenderStrings.clear();
+
+    if (showQuadTreeDebugLines)
+    {
+        quadDebugLines.emplace_back("[QuadTree Bounds]");
+        quadtree->DebugCollectBounds(quadDebugLines, quadDebugMaxDepth, quadDebugOnlyDepth);
+    }
+    else
+    {
+        quadDebugLines.clear();
+    }
+
+    if (showQuadTreeDebugRects)
+    {
+        quadtree->DebugCollectRects(quadDebugRects, quadDebugMaxDepth, quadDebugOnlyDepth);
+    }
+}
 void GameLevel::Tick(float deltaTime)
 {
     //super::Tick(deltaTime);
 
     // QuadTree 생성.
     MakeQuadTree();
+    UpdateQuadTreeDebugLines();
 
     // 충돌 판정 처리.
     ProcessCollisionPlayerBulletAndEnemy();
@@ -134,6 +166,108 @@ void GameLevel::Draw()
 
     // 점수 보여주기.
     ShowScore();
+
+    DrawQuadTreeDebug();
+}
+
+void GameLevel::DrawQuadTreeDebug()
+{
+    if (!showQuadTreeDebug)
+    {
+        return;
+    }
+
+    if (showQuadTreeDebugRects)
+    {
+        for (const QuadTree::DebugRect& entry : quadDebugRects)
+        {
+            DrawDebugRect(entry.bounds, entry.depth);
+        }
+    }
+
+    if (showQuadTreeDebugLines)
+    {
+        int y = 2; // exp/hp 바 아래부터 출력
+        for (const std::string& line : quadDebugLines)
+        {
+            Renderer::Get().Submit(line.c_str(), Vector2(0, y), Color::White, 10);
+            ++y;
+            if (y >= Engine::Get().GetHeight())
+            {
+                break;
+            }
+        }
+    }
+}
+
+void GameLevel::DrawDebugRect(const Rect& rect, int depth)
+{
+    if (rect.width <= 0 || rect.height <= 0)
+    {
+        return;
+    }
+
+    const int screenW = Engine::Get().GetWidth();
+    const int screenH = Engine::Get().GetHeight();
+
+    int left = max(0, rect.x);
+    int top = max(0, rect.y);
+    int right = min(screenW - 1, rect.x + rect.width - 1);
+    int bottom = min(screenH - 1, rect.y + rect.height - 1);
+
+    if (right < left || bottom < top)
+    {
+        return;
+    }
+
+    Color color = Color::White;
+    switch (depth & 3)
+    {
+    case 1: color = Color::Red; break;
+    case 2: color = Color::Green; break;
+    case 3: color = Color::Blue; break;
+    default: color = Color::White; break;
+    }
+
+    const int lineLength = right - left + 1;
+    if (lineLength <= 0)
+    {
+        return;
+    }
+
+    const int sorting = 10;
+
+    // top line
+    {
+        std::string line(lineLength, '-');
+        line.front() = '+';
+        line.back() = '+';
+        quadDebugRenderStrings.emplace_back(line);
+        Renderer::Get().Submit(quadDebugRenderStrings.back().c_str(), Vector2(left, top), color, sorting);
+    }
+
+    // bottom line
+    if (bottom != top)
+    {
+        std::string line(lineLength, '-');
+        line.front() = '+';
+        line.back() = '+';
+        quadDebugRenderStrings.emplace_back(line);
+        Renderer::Get().Submit(quadDebugRenderStrings.back().c_str(), Vector2(left, bottom), color, sorting);
+    }
+
+    // vertical lines
+    if (bottom - top >= 2)
+    {
+        for (int y = top + 1; y <= bottom - 1; ++y)
+        {
+            Renderer::Get().Submit("|", Vector2(left, y), color, sorting);
+            if (right != left)
+            {
+                Renderer::Get().Submit("|", Vector2(right, y), color, sorting);
+            }
+        }
+    }
 }
 
 void GameLevel::ProcessCollisionPlayerBulletAndEnemy()

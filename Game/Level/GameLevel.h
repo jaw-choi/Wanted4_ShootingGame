@@ -3,6 +3,8 @@
 #include "Level/Level.h"
 #include "Math/Vector2.h"
 #include "Math/QuadTree.h"
+#include <string>
+#include <vector>
 
 using namespace Wanted;
 
@@ -27,6 +29,9 @@ private:
 
 	//Quadtree
 	void MakeQuadTree();
+	void UpdateQuadTreeDebugLines();
+	void DrawQuadTreeDebug();
+	void DrawDebugRect(const Rect& rect, int depth);
 
 	void PrintFPS(float deltaTime);
 
@@ -60,4 +65,14 @@ private:
 	bool isLevelUpUIVisible = false;
 
 	Actor* levelUpUIInstance = nullptr;
+
+	// QuadTree 디버그 출력
+	bool showQuadTreeDebug = true;
+	bool showQuadTreeDebugLines = false;
+	bool showQuadTreeDebugRects = true;
+	int quadDebugMaxDepth = -1;
+	int quadDebugOnlyDepth = -1;
+	std::vector<std::string> quadDebugLines;
+	std::vector<QuadTree::DebugRect> quadDebugRects;
+	std::vector<std::string> quadDebugRenderStrings;
 };
