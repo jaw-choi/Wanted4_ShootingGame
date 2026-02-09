@@ -89,7 +89,7 @@ void LevelUpOverlay::ShowLevelUpUI()
         }
         });
     choices.push_back({
-    "../Assets/choice3.txt",
+    "../Assets/choice4.txt",
     [this]()
     {
         player->AddExperience(1);
