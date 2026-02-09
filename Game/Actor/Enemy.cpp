@@ -56,7 +56,12 @@ void Enemy::Tick(float deltaTime)
     super::Tick(deltaTime);
 
     // 1. 다음 위치 예측
-    currPos = currPos + dir * moveSpeed * deltaTime;
+    float yScale = 0.6f; // 세로는 60% 속도
+
+    Vector2f delta = dir * (moveSpeed * deltaTime);
+    delta.y *= yScale;
+
+    currPos = currPos + delta;
     //Vector2 desiredPos = Vector2(static_cast<int>(desiredPosF.x), static_cast<int>(desiredPosF.y));
 
     //// 2. 쿼드트리를 이용한 충돌 검사

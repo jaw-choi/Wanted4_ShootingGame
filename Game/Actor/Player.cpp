@@ -12,7 +12,7 @@ Player::Player()
 {
     // 생성 위치 설정.
     int xPosition = (Engine::Get().GetWidth() / 2) - (width / 2);
-    int yPosition = Engine::Get().GetHeight() - 2;
+    int yPosition = Engine::Get().GetHeight() / 2 - 2;
     SetPosition(Vector2(xPosition, yPosition));
 
     // 타이머 목표 시간 설정.
