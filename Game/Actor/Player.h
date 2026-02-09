@@ -4,6 +4,7 @@
 #include "Util/Timer.h"
 #include "Stat/Stat.h"
 #include "Interface/IstatHolder.h"
+#include <functional>
 
 using namespace Wanted;
 
@@ -51,6 +52,9 @@ public:
     void DrawExpStars(int exp, int currFullExp);
     void DrawHp(int hp,int fullHp);
 
+    // Level이 등록해주는 콜백
+    void SetOnLevelUp(const std::function<void()>& callback) { onLevelUp = callback; }
+
 private:
 
     virtual void Tick(float deltaTime) override;
@@ -87,6 +91,7 @@ private:
     void printExp();
 
 private:
+    std::function<void()> onLevelUp;
 
     // 타이머 변수.
     Timer timer;

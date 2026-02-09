@@ -6,6 +6,7 @@
 #include "Actor/EnemySpawner.h"
 #include "Actor/MouseTester.h"
 #include "Actor/ExpGem.h"
+#include "Actor/LevelUpOverlay.h"
 #include "Render/Renderer.h"
 #include "Engine/Engine.h"
 
@@ -31,7 +32,7 @@ GameLevel::~GameLevel()
 
 void GameLevel::PrintFPS(float deltaTime)
 {
-  static double accumTime = 0.0;
+    static double accumTime = 0.0;
     static int frameCount = 0;
     static double cachedFps = 0.0;
 
@@ -71,7 +72,7 @@ void GameLevel::MakeQuadTree()
 }
 void GameLevel::Tick(float deltaTime)
 {
-    super::Tick(deltaTime);
+    //super::Tick(deltaTime);
 
     // QuadTree 생성.
     MakeQuadTree();
@@ -87,7 +88,26 @@ void GameLevel::Tick(float deltaTime)
 
     ///
     PrintFPS(deltaTime);
-    //
+
+
+        //Level Up UI
+        for (Actor* const actor : actors)
+        {
+            if (isLevelUpUIVisible)
+            {
+                if (actor->IsTypeOf<LevelUpOverlay>())
+                {
+                    actor->Tick(deltaTime);
+                }
+                else
+                    actor->Tick(0.f);
+            }
+            else
+            {
+                actor->Tick(deltaTime);
+            }
+        }
+    
 }
 
 void GameLevel::Draw()
@@ -290,7 +310,7 @@ void GameLevel::ProcessCollisionPlayerAndExpGemQuadTree()
                 if (actor->TestIntersect(player))
                 {
                     //충돌 시 Get Exp and destroy Exp
-                    player->AddExperience(3);
+                    player->AddExperience(10);
                     actor->Destroy();
                 }
             }

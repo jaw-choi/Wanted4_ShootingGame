@@ -16,6 +16,10 @@ public:
 	~GameLevel();
 
 	QuadTree* GetQuadtree() const { return quadtree; }
+
+	inline void ShowLevelUpUI() { isLevelUpUIVisible  = true; }
+	inline void HideLevelUpUI() { isLevelUpUIVisible = false; }
+
 private:
 
 	virtual void Tick(float deltaTime) override;
@@ -52,4 +56,8 @@ private:
 
 	// 점수 문자열.
 	char scoreString[128] = {};
+
+	bool isLevelUpUIVisible = false;
+
+	Actor* levelUpUIInstance = nullptr;
 };

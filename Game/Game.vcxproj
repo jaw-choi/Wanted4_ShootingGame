@@ -98,6 +98,7 @@
     <ClCompile Include="Actor\MouseTester.cpp" />
     <ClCompile Include="Actor\Player.cpp" />
     <ClCompile Include="Actor\PlayerBullet.cpp" />
+    <ClCompile Include="Actor\LevelUpOverlay.cpp" />
     <ClCompile Include="Level\GameLevel.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Util\Timer.cpp" />
@@ -111,6 +112,7 @@
     <ClInclude Include="Actor\MouseTester.h" />
     <ClInclude Include="Actor\Player.h" />
     <ClInclude Include="Actor\PlayerBullet.h" />
+    <ClInclude Include="Actor\LevelUpOverlay.h" />
     <ClInclude Include="Level\GameLevel.h" />
     <ClInclude Include="Util\Timer.h" />
   </ItemGroup>

@@ -4,6 +4,9 @@
 #include "Engine/Engine.h"
 #include "Level/Level.h"
 #include "Render/Renderer.h"
+#include "Actor/LevelUpOverlay.h"
+#include "Level/GameLevel.h"
+
 #include <algorithm>
 #include <iostream>
 
@@ -30,6 +33,10 @@ Player::~Player()
 
 void Player::Tick(float deltaTime)
 {
+    if (deltaTime <= 0.0f)
+    {
+        return;
+    }
     super::Tick(deltaTime);
 
     printHp();
@@ -261,6 +268,11 @@ void Player::AddExperience(long long expAmount)
         int remain = 0;
         remain = exp % currFullExp;
         LevelUp(remain);
+        Level* currLevel = GetOwner();
+        GameLevel* gameLevel = dynamic_cast<GameLevel*>(GetOwner());
+        gameLevel->ShowLevelUpUI();
+        dynamic_cast<GameLevel*>(GetOwner())->ShowLevelUpUI();
+        dynamic_cast<GameLevel*>(GetOwner())->AddNewActor(new LevelUpOverlay(this));
     }
 }
 
@@ -281,6 +293,8 @@ void Player::LevelUp(int remain)
     // currFullExp 다음 단계로 올리기
     currFullExp = (long long)((float)currFullExp * 1.2f);
     ++level;
+    if (onLevelUp)
+        onLevelUp();
 }
 
 // Level에서 매 tick 불림

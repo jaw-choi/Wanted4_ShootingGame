@@ -54,7 +54,10 @@ Enemy::~Enemy()
 void Enemy::Tick(float deltaTime)
 {
     super::Tick(deltaTime);
-
+    if (deltaTime <= 0.0f)
+    {
+        return;
+    }
     // 1. 다음 위치 예측
     float yScale = 0.6f; // 세로는 60% 속도
 
