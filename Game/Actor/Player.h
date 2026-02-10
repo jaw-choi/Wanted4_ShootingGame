@@ -90,6 +90,7 @@ private:
     void printHp();
     void printExp();
 
+    void PlayAnimHit();
 private:
     std::function<void()> onLevelUp;
 
@@ -98,6 +99,8 @@ private:
     Timer yPostimer;
     Timer xPostimer;
     Timer hpTimer;
+
+    bool isTakenDamage = false;
 
 private:
     // 연사 시간 간격.
@@ -121,5 +124,7 @@ private:
     char expString[128] = {};
     char expBarString[128] = {};
     char hpBarString[128] = {};
+
+    float hitElapsedTime = 0.f;
 
 };

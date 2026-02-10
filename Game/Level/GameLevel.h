@@ -46,6 +46,11 @@ private:
 	// 점수 보여주는 함수.
 	void ShowScore();
 
+	// Debug Button Check
+	void CheckDebugButton();
+	void PrintQuadDebugText();
+	void PrintQuadDebugRect();
+	void PrintNoDebug();
 private:
 	//QuadTree
 	QuadTree* quadtree;
@@ -67,12 +72,14 @@ private:
 	Actor* levelUpUIInstance = nullptr;
 
 	// QuadTree 디버그 출력
-	bool showQuadTreeDebug = true;
-	bool showQuadTreeDebugLines = false;
-	bool showQuadTreeDebugRects = true;
+	bool showQuadTreeDebugLines = true;
+	bool showQuadTreeDebugRects = false;
+
 	int quadDebugMaxDepth = -1;
 	int quadDebugOnlyDepth = -1;
+
 	std::vector<std::string> quadDebugLines;
+
 	std::vector<QuadTree::DebugRect> quadDebugRects;
 	std::vector<std::string> quadDebugRenderStrings;
 };

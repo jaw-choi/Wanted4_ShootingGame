@@ -9,6 +9,7 @@
 #include "Actor/LevelUpOverlay.h"
 #include "Render/Renderer.h"
 #include "Engine/Engine.h"
+#include "Core/Input.h"
 
 #include <set>
 #include <algorithm>
@@ -74,7 +75,7 @@ void GameLevel::MakeQuadTree()
 
 void GameLevel::UpdateQuadTreeDebugLines()
 {
-    if (!showQuadTreeDebug || !quadtree)
+    if (!quadtree)
     {
         quadDebugLines.clear();
         quadDebugRects.clear();
@@ -105,6 +106,11 @@ void GameLevel::Tick(float deltaTime)
 {
     //super::Tick(deltaTime);
 
+    //Debug Active Button
+    CheckDebugButton();
+
+    
+
     // QuadTree 생성.
     MakeQuadTree();
     UpdateQuadTreeDebugLines();
@@ -122,24 +128,24 @@ void GameLevel::Tick(float deltaTime)
     PrintFPS(deltaTime);
 
 
-        //Level Up UI
-        for (Actor* const actor : actors)
+    //Level Up UI
+    for (Actor* const actor : actors)
+    {
+        if (isLevelUpUIVisible)
         {
-            if (isLevelUpUIVisible)
-            {
-                if (actor->IsTypeOf<LevelUpOverlay>())
-                {
-                    actor->Tick(deltaTime);
-                }
-                else
-                    actor->Tick(0.f);
-            }
-            else
+            if (actor->IsTypeOf<LevelUpOverlay>())
             {
                 actor->Tick(deltaTime);
             }
+            else
+                actor->Tick(0.f);
         }
-    
+        else
+        {
+            actor->Tick(deltaTime);
+        }
+    }
+
 }
 
 void GameLevel::Draw()
@@ -172,10 +178,6 @@ void GameLevel::Draw()
 
 void GameLevel::DrawQuadTreeDebug()
 {
-    if (!showQuadTreeDebug)
-    {
-        return;
-    }
 
     if (showQuadTreeDebugRects)
     {
@@ -509,6 +511,43 @@ void GameLevel::ShowScore()
         Vector2(0, Engine::Get().GetHeight() - 1)
     );
 
+}
+
+void GameLevel::CheckDebugButton()
+{
+    if (Input::Get().GetKeyDown(VK_F1))
+    {
+        // QuadTree Bound 활성화, 나머지 비활성화
+        PrintNoDebug();
+    }
+    if (Input::Get().GetKeyDown(VK_F2))
+    {
+        // QuadTree Text 활성화, 나머지 비활성화
+        PrintQuadDebugText();
+    }
+    if (Input::Get().GetKeyDown(VK_F3))
+    {
+        // QuadTree Bound 활성화, 나머지 비활성화
+        PrintQuadDebugRect();
+    }
+}
+
+void GameLevel::PrintQuadDebugText()
+{
+    showQuadTreeDebugLines = true;
+    showQuadTreeDebugRects = false;
+}
+
+void GameLevel::PrintQuadDebugRect()
+{
+    showQuadTreeDebugLines = false;
+    showQuadTreeDebugRects = true;
+}
+
+void GameLevel::PrintNoDebug()
+{
+    showQuadTreeDebugLines = false;
+    showQuadTreeDebugRects = false;
 }
 
 void GameLevel::ProcessAstarAlgorithmPlayerAndEnemy()

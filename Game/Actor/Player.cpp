@@ -6,6 +6,7 @@
 #include "Render/Renderer.h"
 #include "Actor/LevelUpOverlay.h"
 #include "Level/GameLevel.h"
+#include "Actor/PlayerHitEffect.h"
 
 #include <algorithm>
 #include <iostream>
@@ -83,6 +84,12 @@ void Player::Tick(float deltaTime)
     if (Input::Get().GetKey('W') || Input::Get().GetKey(VK_UP))
     {
         MoveUpInterval();
+    }
+
+    if (isTakenDamage)
+    {
+        hitElapsedTime += deltaTime;
+        PlayAnimHit();
     }
 
     //FireInterval();
@@ -240,6 +247,37 @@ void Player::printExp()
     );
 }
 
+void Player::PlayAnimHit()
+{
+    if (hitElapsedTime <= invincibilityTime)
+    {
+        if (hitElapsedTime > 0.9f)
+            color = Color::White;
+        else if (hitElapsedTime > 0.8f)
+            color = Color::Red;
+        else if (hitElapsedTime > 0.7f)
+            color = Color::White;
+        else if (hitElapsedTime > 0.6f)
+            color = Color::Red;
+        else if (hitElapsedTime > 0.5f)
+            color = Color::White;
+        else if (hitElapsedTime > 0.4f)
+            color = Color::Red;
+        else if (hitElapsedTime > 0.3f)
+            color = Color::White;
+        else if (hitElapsedTime > 0.2f)
+            color = Color::Red;
+        else if (hitElapsedTime > 0.1f)
+            color = Color::White;
+    }
+    else
+    {
+        color = Color::White;
+        isTakenDamage = false;
+        hitElapsedTime = 0.f;
+    }
+}
+
 
 bool Player::CanMoveY() const
 {
@@ -253,11 +291,17 @@ void Player::TakeDamage(int amount)
 {
     if (!hpTimer.IsTimeOut())
     {
+        //isTakenDamage = false;
         return;
     }
+    isTakenDamage = true;
+    color = Color::Red;
     hpTimer.Reset();
     playerStats.hp -= amount;
+
     //TODO: hit effect -> white>red>white
+    //GetOwner()->AddNewActor(new PlayerHitEffect(position));
+
 }
 
 void Player::AddExperience(long long expAmount)
