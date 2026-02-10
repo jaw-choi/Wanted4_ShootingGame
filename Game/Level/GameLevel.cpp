@@ -14,6 +14,13 @@
 #include <set>
 #include <algorithm>
 
+#include <crtdbg.h>
+#ifdef _DEBUG
+#define new new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
+#else
+#define DBG_NEW new
+#endif
+
 GameLevel::GameLevel()
 {
     // Player 액터 추가.
@@ -24,13 +31,14 @@ GameLevel::GameLevel()
 
     // Test: 마우스 테스터 추가.
     AddNewActor(new MouseTester());
-    quadtree = new QuadTree(Rect(0, 0, Engine::Get().GetWidth(), Engine::Get().GetHeight()), 4, 0, 5);
+    quadtree = new QuadTree(Rect(0, 0, Engine::Get().GetWidth(), Engine::Get().GetHeight()), 4, 0, 4);
 
     Renderer::Get().SetCameraOffset(cameraOffset);
 }
 
 GameLevel::~GameLevel()
 {
+    SafeDelete(quadtree);
 }
 
 void GameLevel::BeginPlay()
@@ -60,12 +68,12 @@ void GameLevel::PrintFPS(float deltaTime)
         frameCount = 0;
     }
 
-    static char fpsString[128]; // ★ 핵심: static
+    //static char fpsString[128]; 
     sprintf_s(fpsString, 128, "FPS: %.1f  dt: %.4f", cachedFps, deltaTime);
 
     Renderer::Get().Submit(
         fpsString,
-        Vector2(Engine::Get().GetWidth() / 2, Engine::Get().GetHeight() - 2)
+        Vector2(0, Engine::Get().GetHeight() - 1)
     );
 }
 
@@ -120,13 +128,10 @@ void GameLevel::Tick(float deltaTime)
 
     //Debug Active Button
     CheckDebugButton();
-    if (isShowStat)
-        PrintFPS(deltaTime);
+    
     ShowStats();
 
-    // QuadTree 생성.
-    MakeQuadTree();
-    UpdateQuadTreeDebugLines();
+
 
     // 충돌 판정 처리.
     ProcessCollisionPlayerBulletAndEnemy();
@@ -180,7 +185,11 @@ void GameLevel::Tick(float deltaTime)
         UpdateCamera(*playerForCamera);
     }
 
-
+    if (isShowStat)
+        PrintFPS(deltaTime);
+    // QuadTree 생성.
+    MakeQuadTree();
+    UpdateQuadTreeDebugLines();
 
 }
 
@@ -283,7 +292,7 @@ void GameLevel::DrawDebugRect(const Rect& rect, int depth)
         line.front() = '+';
         line.back() = '+';
         quadDebugRenderStrings.emplace_back(line);
-        Renderer::Get().SubmitWorld(quadDebugRenderStrings.back().c_str(), Vector2(left, top), color, sorting);
+        Renderer::Get().Submit(quadDebugRenderStrings.back().c_str(), Vector2(left, top), color, sorting);
     }
 
     // bottom line
@@ -293,7 +302,7 @@ void GameLevel::DrawDebugRect(const Rect& rect, int depth)
         line.front() = '+';
         line.back() = '+';
         quadDebugRenderStrings.emplace_back(line);
-        Renderer::Get().SubmitWorld(quadDebugRenderStrings.back().c_str(), Vector2(left, bottom), color, sorting);
+        Renderer::Get().Submit(quadDebugRenderStrings.back().c_str(), Vector2(left, bottom), color, sorting);
     }
 
     // vertical lines
@@ -301,10 +310,10 @@ void GameLevel::DrawDebugRect(const Rect& rect, int depth)
     {
         for (int y = top + 1; y <= bottom - 1; ++y)
         {
-            Renderer::Get().SubmitWorld("|", Vector2(left, y), color, sorting);
+            Renderer::Get().Submit("|", Vector2(left, y), color, sorting);
             if (right != left)
             {
-                Renderer::Get().SubmitWorld("|", Vector2(right, y), color, sorting);
+                Renderer::Get().Submit("|", Vector2(right, y), color, sorting);
             }
         }
     }
@@ -614,6 +623,12 @@ void GameLevel::CheckDebugButton()
         // QuadTree Bound 활성화, 나머지 비활성화
         PrintQuadDebugRect();
     }
+    if (Input::Get().GetKeyDown(VK_F4))
+    {
+        // 모두 활성화
+        showQuadTreeDebugLines = true;
+        showQuadTreeDebugRects = true;
+    }
 }
 
 void GameLevel::PrintQuadDebugText()
@@ -639,8 +654,8 @@ void GameLevel::UpdateCamera(const Player& player)
     const int screenW = Engine::Get().GetWidth();
     const int screenH = Engine::Get().GetHeight();
 
-    const int marginX = screenW / 4;
-    const int marginY = screenH / 4;
+    const int marginX = screenW / 5;
+    const int marginY = screenH / 5;
 
     int camX = cameraOffset.x;
     int camY = cameraOffset.y;
@@ -782,4 +797,5 @@ void GameLevel::ProcessAstarAlgorithmPlayerAndEnemy()
     }
 
 }
+
 

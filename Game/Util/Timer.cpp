@@ -1,4 +1,11 @@
-#include "Timer.h"
+ï»¿#include "Timer.h"
+
+#include <crtdbg.h>
+#ifdef _DEBUG
+#define new new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
+#else
+#define DBG_NEW new
+#endif
 
 Timer::Timer(float targetTime)
 	: targetTime(targetTime)
@@ -7,7 +14,7 @@ Timer::Timer(float targetTime)
 
 void Timer::Tick(float deltaTime)
 {
-	// °æ°ú ½Ã°£ ¾÷µ¥ÀÌÆ®.
+	// ê²½ê³¼ ì‹œê°„ ì—…ë°ì´íŠ¸.
 	elapsedTime += deltaTime;
 }
 
@@ -25,3 +32,4 @@ void Timer::SetTargetTime(float newTargetTime)
 {
 	targetTime = newTargetTime;
 }
+

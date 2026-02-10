@@ -2,6 +2,13 @@
 #include "Player.h"
 #include "Level/Level.h"
 
+#include <crtdbg.h>
+#ifdef _DEBUG
+#define new new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
+#else
+#define DBG_NEW new
+#endif
+
 std::vector<ExpGem*> ExpGem::pool;
 
 
@@ -87,4 +94,5 @@ void ExpGem::Tick(float deltaTime)
 {
     super::Tick(deltaTime);
 }
+
 

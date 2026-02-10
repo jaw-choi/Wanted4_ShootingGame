@@ -10,6 +10,13 @@
 #include "Level/GameLevel.h"
 #include "Math/QuadTree.h"
 
+#include <crtdbg.h>
+#ifdef _DEBUG
+#define new new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
+#else
+#define DBG_NEW new
+#endif
+
 std::vector<Enemy*> Enemy::pool;
 
 
@@ -259,5 +266,6 @@ void Enemy::SetWorldPosition(const Vector2& newPosition)
     currPos = Vector2f(newPosition);
     SetPosition(newPosition);
 }
+
 
 

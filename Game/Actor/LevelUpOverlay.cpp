@@ -6,6 +6,13 @@
 #include "Level/GameLevel.h"
 #include "Util/Util.h"
 
+#include <crtdbg.h>
+#ifdef _DEBUG
+#define new new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
+#else
+#define DBG_NEW new
+#endif
+
 LevelUpOverlay::LevelUpOverlay(Player* _player)
     : player(_player)
 {
@@ -40,7 +47,7 @@ void LevelUpOverlay::Tick(float deltaTime)
 
 void LevelUpOverlay::Draw()
 {
-    Renderer::Get().Submit("LEVEL UP! Choose one:", Vector2(Engine::Get().GetWidth()/2 - 12, 0), Color::Red);
+    Renderer::Get().SubmitWorld("LEVEL UP! Choose one:", Vector2(Engine::Get().GetWidth()/2 - 12, 0), Color::Red);
 
     int currentY = 2; // 시작 위치
 
@@ -117,3 +124,4 @@ void LevelUpOverlay::HideLevelUpUI()
     Destroy();
     static_cast<GameLevel*>(GetOwner())->HideLevelUpUI();
 }
+

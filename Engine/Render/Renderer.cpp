@@ -5,6 +5,13 @@
 #include <fstream>
 #include <sstream>
 
+#include <crtdbg.h>
+#ifdef _DEBUG
+#define new new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
+#else
+#define DBG_NEW new
+#endif
+
 namespace Wanted
 {
 	Renderer::Frame::Frame(int bufferCount)
@@ -162,6 +169,7 @@ namespace Wanted
 
 		// 렌더 큐 비우기.
 		renderQueue.clear();
+		stringBuffer.clear();
 	}
 
 	Renderer& Renderer::Get()
@@ -306,6 +314,7 @@ namespace Wanted
 	    this->Submit(stringBuffer.back().c_str(), position, color, sortingOrder);
 
 	    file.close();
+	    
 
 	    // 다음 텍스트가 시작되어야 할 Y 좌표 반환
 	    return position.y + lineCount;
@@ -333,3 +342,4 @@ namespace Wanted
 		return screenBuffers[currentBufferIndex];
 	}
 }
+

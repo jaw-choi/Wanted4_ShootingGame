@@ -1,6 +1,13 @@
 ﻿#include "Vector2.h"
 #include <iostream>
 
+#include <crtdbg.h>
+#ifdef _DEBUG
+#define new new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
+#else
+#define DBG_NEW new
+#endif
+
 namespace Wanted
 {
 	Vector2 Vector2::Zero(0, 0);

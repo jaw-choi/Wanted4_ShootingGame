@@ -1,6 +1,13 @@
 ﻿#include "EnemyBullet.h"
 #include "Engine/Engine.h"
 
+#include <crtdbg.h>
+#ifdef _DEBUG
+#define new new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
+#else
+#define DBG_NEW new
+#endif
+
 EnemyBullet::EnemyBullet(
 	const Vector2& position, 
 	float moveSpeed)
@@ -31,3 +38,4 @@ void EnemyBullet::Tick(float deltaTime)
 	//	Vector2(position.x, static_cast<int>(yPosition))
 	//);
 }
+

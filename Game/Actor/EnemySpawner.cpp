@@ -8,6 +8,13 @@
 
 // 적 생성할 때 사용할 글자 값.
 // 여기에서 static은 private.
+#include <crtdbg.h>
+#ifdef _DEBUG
+#define new new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
+#else
+#define DBG_NEW new
+#endif
+
 static const char* enemyType[] =
 {
 	";:^:;",
@@ -81,3 +88,4 @@ void EnemySpawner::SpawnEnemy(float deltaTime)
 	const int posIndex = Util::Random(0, static_cast<int>(positions.size()) - 1);
 	Enemy::Acquire(GetOwner(), enemyType[index], positions[posIndex]);
 }
+

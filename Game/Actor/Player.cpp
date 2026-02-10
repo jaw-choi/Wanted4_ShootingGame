@@ -10,6 +10,13 @@
 #include <algorithm>
 #include <iostream>
 
+#include <crtdbg.h>
+#ifdef _DEBUG
+#define new new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
+#else
+#define DBG_NEW new
+#endif
+
 Player::Player()
     : super("<+A+>", Vector2::Zero, Color::Green), playerStats(10, 10, 0.2f, 1), exp(0), currFullExp(10), level(1)
 {
@@ -489,3 +496,4 @@ void Player::DrawHp(int hp, int fullHp)
     // 4) 화면 상단 출력
     Renderer::Get().Submit(hpBarString, Vector2(0, 1), Color::Red,2);
 }
+

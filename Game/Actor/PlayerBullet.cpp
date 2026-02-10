@@ -1,6 +1,13 @@
 ﻿#include "PlayerBullet.h"
 #include "Level/Level.h"
 
+#include <crtdbg.h>
+#ifdef _DEBUG
+#define new new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
+#else
+#define DBG_NEW new
+#endif
+
 std::vector<PlayerBullet*> PlayerBullet::pool;
 
 PlayerBullet::PlayerBullet(const Vector2f& position, const Vector2f& dir, float _moveSpeed)
@@ -122,5 +129,6 @@ void PlayerBullet::Tick(float deltaTime)
 	// 위치 갱신.
 	//SetPosition(newPosition);
 }
+
 
 

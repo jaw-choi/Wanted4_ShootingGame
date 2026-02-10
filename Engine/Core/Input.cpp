@@ -7,6 +7,13 @@
 
 // Ctrl + Home키로 파일 제일 위로 이동 가능.
 // Rider는 헤더 자동 추가 해줌.
+#include <crtdbg.h>
+#ifdef _DEBUG
+#define new new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
+#else
+#define DBG_NEW new
+#endif
+
 namespace Wanted
 {
 	// 전역 변수 초기화.
@@ -236,3 +243,4 @@ namespace Wanted
 		}
 	}
 }
+

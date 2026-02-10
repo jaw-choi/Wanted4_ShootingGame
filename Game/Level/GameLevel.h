@@ -76,6 +76,7 @@ private:
 
 	// 점수 문자열.
 	char scoreString[128] = {};
+	char fpsString[128] = {};
 
 	bool isShowStat = false;
 	bool isLevelUpUIVisible = false;

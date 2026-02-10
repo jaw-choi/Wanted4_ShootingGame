@@ -7,6 +7,13 @@
 #include <iostream>
 #include <Windows.h>
 
+#include <crtdbg.h>
+#ifdef _DEBUG
+#define new new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
+#else
+#define DBG_NEW new
+#endif
+
 namespace Wanted
 {
 	// 전역 변수 초기화.

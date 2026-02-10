@@ -2,6 +2,13 @@
 #include "Engine/Engine.h"
 
 // 효과 재생에 사용할 문자열 시퀀스 (일종의 애니메이션 프레임).
+#include <crtdbg.h>
+#ifdef _DEBUG
+#define new new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
+#else
+#define DBG_NEW new
+#endif
+
 static const EnemyDestroyEffect::EffectFrame sequence[] =
 {
 	EnemyDestroyEffect::EffectFrame("  @  ", 0.08f, Color::Red),

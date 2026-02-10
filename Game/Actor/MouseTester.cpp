@@ -4,6 +4,13 @@
 #include "Engine/Engine.h"
 #include <iostream>
 
+#include <crtdbg.h>
+#ifdef _DEBUG
+#define new new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
+#else
+#define DBG_NEW new
+#endif
+
 MouseTester::MouseTester()
 	: super(" ", Vector2(Engine::Get().GetWidth() / 2, Engine::Get().GetHeight() - 1))
 {
@@ -29,3 +36,4 @@ void MouseTester::Tick(float deltaTime)
 		ChangeImage(buffer);
 	}*/
 }
+
