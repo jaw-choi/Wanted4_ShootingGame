@@ -26,6 +26,7 @@ public:
 	inline bool GetIsShowStat() { return isShowStat; }
 private:
 
+	virtual void BeginPlay() override;
 	virtual void Tick(float deltaTime) override;
 	virtual void Draw() override;
 

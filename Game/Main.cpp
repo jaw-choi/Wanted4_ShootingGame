@@ -8,12 +8,19 @@ using namespace Wanted;
 #include <stdlib.h>
 #include <crtdbg.h>
 
+#ifdef _DEBUG
+#define new new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
+#else
+#define DBG_NEW new
+#endif
+
 int main()
 {
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
-	//system("mode con: cols=100 lines=50");
 
 	Engine engine;
 	engine.SetNewLevel(new GameLevel());
 	engine.Run();
+	_CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_DEBUG);
+	return 0;
 }

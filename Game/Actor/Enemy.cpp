@@ -77,6 +77,28 @@ Enemy* Enemy::Acquire(Level* owner, const char* image, const Vector2& spawnPosit
 	return enemy;
 }
 
+void Enemy::Prewarm(Level* owner, int count)
+{
+	if (count <= 0)
+	{
+		return;
+	}
+
+	for (int i = 0; i < count; ++i)
+	{
+		Enemy* enemy = new Enemy("(oOo)");
+		enemy->inPool = true;
+		enemy->isActive = false;
+		enemy->destroyRequested = false;
+		pool.emplace_back(enemy);
+
+		if (owner)
+		{
+			owner->AddNewActor(enemy);
+		}
+	}
+}
+
 void Enemy::ReleaseToPool()
 {
 	if (inPool)

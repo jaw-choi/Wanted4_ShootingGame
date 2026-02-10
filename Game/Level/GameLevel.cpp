@@ -33,6 +33,17 @@ GameLevel::~GameLevel()
 {
 }
 
+void GameLevel::BeginPlay()
+{
+    super::BeginPlay();
+
+    PlayerBullet::Prewarm(this, 200);
+    Enemy::Prewarm(this, 50);
+    ExpGem::Prewarm(this, 150);
+
+    ProcessAddAndDestroyActors();
+}
+
 void GameLevel::PrintFPS(float deltaTime)
 {
     static double accumTime = 0.0;

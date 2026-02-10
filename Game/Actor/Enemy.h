@@ -30,6 +30,7 @@ public:
     virtual void Tick(float deltaTime) override;
 public:
     static Enemy* Acquire(Level* owner, const char* image, const Vector2& spawnPosition);
+    static void Prewarm(Level* owner, int count);
     void ReleaseToPool();
     void Initialize(const char* image, const Vector2& spawnPosition);
 

@@ -36,6 +36,28 @@ PlayerBullet* PlayerBullet::Acquire(Level* owner, const Vector2f& position, cons
 	return bullet;
 }
 
+void PlayerBullet::Prewarm(Level* owner, int count)
+{
+	if (count <= 0)
+	{
+		return;
+	}
+
+	for (int i = 0; i < count; ++i)
+	{
+		PlayerBullet* bullet = new PlayerBullet(Vector2f::Zero, Vector2f::Zero, 0.0f);
+		bullet->inPool = true;
+		bullet->isActive = false;
+		bullet->destroyRequested = false;
+		pool.emplace_back(bullet);
+
+		if (owner)
+		{
+			owner->AddNewActor(bullet);
+		}
+	}
+}
+
 void PlayerBullet::ReleaseToPool()
 {
 	if (inPool)

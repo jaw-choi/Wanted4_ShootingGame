@@ -16,6 +16,7 @@ public:
     ~ExpGem();
 
     static ExpGem* Acquire(Level* owner, const Vector2& position);
+    static void Prewarm(Level* owner, int count);
     void ReleaseToPool();
     void Initialize(const Vector2& position);
 

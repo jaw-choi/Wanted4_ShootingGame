@@ -37,6 +37,28 @@ ExpGem* ExpGem::Acquire(Level* owner, const Vector2& position)
     return gem;
 }
 
+void ExpGem::Prewarm(Level* owner, int count)
+{
+    if (count <= 0)
+    {
+        return;
+    }
+
+    for (int i = 0; i < count; ++i)
+    {
+        ExpGem* gem = new ExpGem(Vector2::Zero);
+        gem->inPool = true;
+        gem->isActive = false;
+        gem->destroyRequested = false;
+        pool.emplace_back(gem);
+
+        if (owner)
+        {
+            owner->AddNewActor(gem);
+        }
+    }
+}
+
 void ExpGem::ReleaseToPool()
 {
     if (inPool)
