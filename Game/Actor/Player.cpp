@@ -117,13 +117,6 @@ void Player::MoveRight()
     xPostimer.Reset();
     // 오른쪽 이동 처리.
     position.x += 1;
-
-    // 좌표 검사.
-    // "<-=A=->"
-    if (position.x + width > Engine::Get().GetWidth())
-    {
-        position.x -= 1;
-    }
 }
 
 void Player::MoveLeft()
@@ -131,12 +124,6 @@ void Player::MoveLeft()
     xPostimer.Reset();
     // 왼쪽 이동 처리.
     position.x -= 1;
-
-    // 좌표 검사.
-    if (position.x < 0)
-    {
-        position.x = 0;
-    }
 }
 
 void Player::MoveDown()
@@ -144,13 +131,6 @@ void Player::MoveDown()
     yPostimer.Reset();
     // 아래쪽 이동 처리.
     position.y += 1;
-
-    // 좌표 검사.
-    // "<-=A=->"
-    if (position.y + height > Engine::Get().GetHeight())
-    {
-        position.y -= 1;
-    }
 }
 
 void Player::MoveUp()
@@ -158,12 +138,6 @@ void Player::MoveUp()
     yPostimer.Reset();
     // 위쪽 이동 처리.
     position.y -= 1;
-
-    // 좌표 검사.
-    if (position.y < 0)
-    {
-        position.y = 0;
-    }
 }
 
 void Player::Fire(Vector2f dir)
@@ -178,7 +152,7 @@ void Player::Fire(Vector2f dir)
     );
 
     // 액터 생성.
-    GetOwner()->AddNewActor(new PlayerBullet(bulletPosition,dir,bulletSpeed));
+    PlayerBullet::Acquire(GetOwner(), bulletPosition, dir, bulletSpeed);
 }
 
 
@@ -296,7 +270,7 @@ void Player::PrintShotSpeed()
     sprintf_s(bulletShotSpeedString, 128, "Shot Speed: %.1f", fireInterval);
     Renderer::Get().Submit(
         bulletShotSpeedString,
-        Vector2(10, Engine::Get().GetHeight() - 4)
+        Vector2(10, Engine::Get().GetHeight() - 3)
     );
 }
 
@@ -305,7 +279,7 @@ void Player::PrintExp()
     sprintf_s(expString, 128, "Level: %d",level);
     Renderer::Get().Submit(
         expString,
-        Vector2(0, Engine::Get().GetHeight() - 4)
+        Vector2(0, Engine::Get().GetHeight() - 3)
     );
 }
 

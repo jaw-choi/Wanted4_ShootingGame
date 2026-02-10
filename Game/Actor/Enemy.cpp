@@ -10,6 +10,8 @@
 #include "Level/GameLevel.h"
 #include "Math/QuadTree.h"
 
+std::vector<Enemy*> Enemy::pool;
+
 
 
 Enemy::Enemy(const char* image)
@@ -49,6 +51,63 @@ Enemy::Enemy(const char* image)
 
 Enemy::~Enemy()
 {
+}
+
+Enemy* Enemy::Acquire(Level* owner, const char* image, const Vector2& spawnPosition)
+{
+	Enemy* enemy = nullptr;
+	if (!pool.empty())
+	{
+		enemy = pool.back();
+		pool.pop_back();
+		enemy->inPool = false;
+		enemy->Initialize(image, spawnPosition);
+	}
+	else
+	{
+		enemy = new Enemy(image);
+		enemy->SetWorldPosition(spawnPosition);
+	}
+
+	if (owner && enemy->GetOwner() == nullptr)
+	{
+		owner->AddNewActor(enemy);
+	}
+
+	return enemy;
+}
+
+void Enemy::ReleaseToPool()
+{
+	if (inPool)
+	{
+		return;
+	}
+
+	inPool = true;
+	isActive = false;
+	destroyRequested = false;
+
+	pool.emplace_back(this);
+}
+
+void Enemy::Initialize(const char* image, const Vector2& spawnPosition)
+{
+	isActive = true;
+	destroyRequested = false;
+
+	ChangeImage(image);
+
+	enemyStats = Stat(10, 10, 6.f, 1);
+	moveSpeed = enemyStats.moveSpeed;
+	direction = MoveDirection::None;
+	dir = Vector2f::Zero;
+
+	currPos = Vector2f(spawnPosition);
+	SetPosition(spawnPosition);
+
+	shotTimer.SetTargetTime(Util::RandomRange(1.0f, 3.0f));
+	shotTimer.Reset();
 }
 
 void Enemy::Tick(float deltaTime)
@@ -147,22 +206,36 @@ bool Enemy::IsDead() const
 
 void Enemy::OnDamaged()
 {
+    if (!IsActive())
+    {
+        return;
+    }
+
     // 액터 제거.
-    Destroy();
+    ReleaseToPool();
 
     // 이펙트 생성 (재생을 위해).
     GetOwner()->AddNewActor(new EnemyDestroyEffect(position));
 
     //Exp 생성
-    GetOwner()->AddNewActor(new ExpGem(position));
+    ExpGem::Acquire(GetOwner(), position);
 }
 
 void Enemy::MoveTo(const Actor& target)
 {
-    Vector2f destination = (Vector2f)target.GetPosition();
-
-    dir = Vector2f(destination - currPos).Normalized();
-
-
+    MoveToPosition(target.GetPosition());
 }
+
+void Enemy::MoveToPosition(const Vector2& targetPosition)
+{
+    Vector2f destination = (Vector2f)targetPosition;
+    dir = Vector2f(destination - currPos).Normalized();
+}
+
+void Enemy::SetWorldPosition(const Vector2& newPosition)
+{
+    currPos = Vector2f(newPosition);
+    SetPosition(newPosition);
+}
+
 

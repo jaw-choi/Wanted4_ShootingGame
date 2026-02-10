@@ -8,6 +8,8 @@
 
 using namespace Wanted;
 
+class Player;
+
 class GameLevel : public Level
 {
 	// RTTI 등록.
@@ -54,6 +56,10 @@ private:
 	void PrintQuadDebugText();
 	void PrintQuadDebugRect();
 	void PrintNoDebug();
+
+	// 카메라 및 배경
+	void UpdateCamera(const Player& player);
+	void DrawBackground();
 private:
 	//QuadTree
 	QuadTree* quadtree;
@@ -86,4 +92,7 @@ private:
 
 	std::vector<QuadTree::DebugRect> quadDebugRects;
 	std::vector<std::string> quadDebugRenderStrings;
+
+	Vector2 cameraOffset = Vector2::Zero;
+	std::vector<std::string> backgroundLines;
 };

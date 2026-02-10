@@ -26,6 +26,7 @@ GameLevel::GameLevel()
     AddNewActor(new MouseTester());
     quadtree = new QuadTree(Rect(0, 0, Engine::Get().GetWidth(), Engine::Get().GetHeight()), 4, 0, 5);
 
+    Renderer::Get().SetCameraOffset(cameraOffset);
 }
 
 GameLevel::~GameLevel()
@@ -128,6 +129,11 @@ void GameLevel::Tick(float deltaTime)
     //Level Up UI
     for (Actor* const actor : actors)
     {
+        if (!actor->IsActive())
+        {
+            continue;
+        }
+
         if (isLevelUpUIVisible)
         {
             if (actor->IsTypeOf<LevelUpOverlay>())
@@ -143,18 +149,39 @@ void GameLevel::Tick(float deltaTime)
         }
     }
 
+    Player* playerForCamera = nullptr;
+    for (Actor* const actor : actors)
+    {
+        if (!actor->IsActive())
+        {
+            continue;
+        }
+
+        if (actor->IsTypeOf<Player>())
+        {
+            playerForCamera = actor->As<Player>();
+            break;
+        }
+    }
+
+    if (playerForCamera)
+    {
+        UpdateCamera(*playerForCamera);
+    }
+
 
 
 }
 
 void GameLevel::Draw()
 {
+    DrawBackground();
     super::Draw();
 
     if (isPlayerDead)
     {
         // 플레이어 죽음 메시지 Renderer에 제출.
-        Renderer::Get().Submit("!Dead!", playerDeadPosition);
+        Renderer::Get().SubmitWorld("!Dead!", playerDeadPosition);
 
         // 점수 보여주기.
         ShowScore();
@@ -245,7 +272,7 @@ void GameLevel::DrawDebugRect(const Rect& rect, int depth)
         line.front() = '+';
         line.back() = '+';
         quadDebugRenderStrings.emplace_back(line);
-        Renderer::Get().Submit(quadDebugRenderStrings.back().c_str(), Vector2(left, top), color, sorting);
+        Renderer::Get().SubmitWorld(quadDebugRenderStrings.back().c_str(), Vector2(left, top), color, sorting);
     }
 
     // bottom line
@@ -255,7 +282,7 @@ void GameLevel::DrawDebugRect(const Rect& rect, int depth)
         line.front() = '+';
         line.back() = '+';
         quadDebugRenderStrings.emplace_back(line);
-        Renderer::Get().Submit(quadDebugRenderStrings.back().c_str(), Vector2(left, bottom), color, sorting);
+        Renderer::Get().SubmitWorld(quadDebugRenderStrings.back().c_str(), Vector2(left, bottom), color, sorting);
     }
 
     // vertical lines
@@ -263,10 +290,10 @@ void GameLevel::DrawDebugRect(const Rect& rect, int depth)
     {
         for (int y = top + 1; y <= bottom - 1; ++y)
         {
-            Renderer::Get().Submit("|", Vector2(left, y), color, sorting);
+            Renderer::Get().SubmitWorld("|", Vector2(left, y), color, sorting);
             if (right != left)
             {
-                Renderer::Get().Submit("|", Vector2(right, y), color, sorting);
+                Renderer::Get().SubmitWorld("|", Vector2(right, y), color, sorting);
             }
         }
     }
@@ -275,15 +302,20 @@ void GameLevel::DrawDebugRect(const Rect& rect, int depth)
 void GameLevel::ProcessCollisionPlayerBulletAndEnemy()
 {
     // 플레이어 탄약과 적 액터 필터링.
-    std::vector<Actor*> bullets;
+    std::vector<PlayerBullet*> bullets;
     std::vector<Enemy*> enemies;
 
     // 액터 필터링.
     for (Actor* const actor : actors)
     {
+        if (!actor->IsActive())
+        {
+            continue;
+        }
+
         if (actor->IsTypeOf<PlayerBullet>())
         {
-            bullets.emplace_back(actor);
+            bullets.emplace_back(actor->As<PlayerBullet>());
             continue;
         }
 
@@ -300,15 +332,30 @@ void GameLevel::ProcessCollisionPlayerBulletAndEnemy()
     }
 
     // 충돌 판정.
-    for (Actor* const bullet : bullets)
+    for (PlayerBullet* const bullet : bullets)
     {
+        if (!bullet->IsActive())
+        {
+            continue;
+        }
+
         for (Enemy* const enemy : enemies)
         {
+            if (!bullet->IsActive())
+            {
+                break;
+            }
+
+            if (!enemy->IsActive())
+            {
+                continue;
+            }
+
             // AABB 겹침 판정.
             if (bullet->TestIntersect(enemy))
             {
                 enemy->OnDamaged();
-                bullet->Destroy();
+                bullet->ReleaseToPool();
 
                 // 점수 추가.
                 score += 1;
@@ -327,6 +374,11 @@ void GameLevel::ProcessCollisionPlayerAndEnemyAABB()
     // 액터 필터링.
     for (Actor* const actor : actors)
     {
+        if (!actor->IsActive())
+        {
+            continue;
+        }
+
         if (!player && actor->IsTypeOf<Player>())
         {
             player = actor->As<Player>();
@@ -381,6 +433,11 @@ void GameLevel::ProcessCollisionPlayerAndEnemyQuadTree()
     // 액터 필터링.
     for (Actor* const actor : actors)
     {
+        if (!actor->IsActive())
+        {
+            continue;
+        }
+
         // player actor 찾기
         if (!player && actor->IsTypeOf<Player>())
         {
@@ -427,6 +484,11 @@ void GameLevel::ProcessCollisionPlayerAndExpGemQuadTree()
     // 액터 필터링.
     for (Actor* const actor : actors)
     {
+        if (!actor->IsActive())
+        {
+            continue;
+        }
+
         // player actor 찾기
         if (!player && actor->IsTypeOf<Player>())
         {
@@ -447,7 +509,7 @@ void GameLevel::ProcessCollisionPlayerAndExpGemQuadTree()
                 {
                     //충돌 시 Get Exp and destroy Exp
                     player->AddExperience(10);
-                    actor->Destroy();
+                    actor->As<ExpGem>()->ReleaseToPool();
                 }
             }
         }
@@ -466,6 +528,11 @@ void GameLevel::ProcessCollisionPlayerAndEnemyBullet()
     // 액터 필터링.
     for (Actor* const actor : actors)
     {
+        if (!actor->IsActive())
+        {
+            continue;
+        }
+
         if (!player && actor->IsTypeOf<Player>())
         {
             player = actor->As<Player>();
@@ -556,6 +623,87 @@ void GameLevel::PrintNoDebug()
     showQuadTreeDebugRects = false;
 }
 
+void GameLevel::UpdateCamera(const Player& player)
+{
+    const int screenW = Engine::Get().GetWidth();
+    const int screenH = Engine::Get().GetHeight();
+
+    const int marginX = screenW / 4;
+    const int marginY = screenH / 4;
+
+    int camX = cameraOffset.x;
+    int camY = cameraOffset.y;
+
+    const Vector2 playerPos = player.GetPosition();
+
+    if (playerPos.x - camX < marginX)
+    {
+        camX = playerPos.x - marginX;
+    }
+    else if (playerPos.x - camX > screenW - marginX)
+    {
+        camX = playerPos.x - (screenW - marginX);
+    }
+
+    if (playerPos.y - camY < marginY)
+    {
+        camY = playerPos.y - marginY;
+    }
+    else if (playerPos.y - camY > screenH - marginY)
+    {
+        camY = playerPos.y - (screenH - marginY);
+    }
+
+    cameraOffset = Vector2(camX, camY);
+    Renderer::Get().SetCameraOffset(cameraOffset);
+}
+
+void GameLevel::DrawBackground()
+{
+    const int screenW = Engine::Get().GetWidth();
+    const int screenH = Engine::Get().GetHeight();
+
+    if (backgroundLines.size() != static_cast<size_t>(screenH))
+    {
+        backgroundLines.assign(static_cast<size_t>(screenH), std::string(screenW, ' '));
+    }
+    else
+    {
+        for (std::string& line : backgroundLines)
+        {
+            if (static_cast<int>(line.size()) != screenW)
+            {
+                line.assign(screenW, ' ');
+            }
+        }
+    }
+
+    for (int y = 0; y < screenH; ++y)
+    {
+        std::string& line = backgroundLines[static_cast<size_t>(y)];
+        for (int x = 0; x < screenW; ++x)
+        {
+            const int worldX = x + cameraOffset.x;
+            const int worldY = y + cameraOffset.y;
+
+            char c = ' ';
+            const int seed = (worldX * 37 + worldY * 17);
+            if (seed % 23 == 0)
+            {
+                c = '`';
+            }
+            else if (seed % 29 == 0)
+            {
+                c = ',';
+            }
+
+            line[static_cast<size_t>(x)] = c;
+        }
+
+        Renderer::Get().Submit(line.c_str(), Vector2(0, y), Color::Green, 0);
+    }
+}
+
 void GameLevel::ProcessAstarAlgorithmPlayerAndEnemy()
 {
     // 플레이어 탄약과 적 액터 필터링.
@@ -565,6 +713,11 @@ void GameLevel::ProcessAstarAlgorithmPlayerAndEnemy()
     // 액터 필터링.
     for (Actor* const actor : actors)
     {
+        if (!actor->IsActive())
+        {
+            continue;
+        }
+
         if (!player && actor->IsTypeOf<Player>())
         {
             player = actor->As<Player>();

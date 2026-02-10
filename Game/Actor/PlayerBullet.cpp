@@ -1,4 +1,7 @@
 ﻿#include "PlayerBullet.h"
+#include "Level/Level.h"
+
+std::vector<PlayerBullet*> PlayerBullet::pool;
 
 PlayerBullet::PlayerBullet(const Vector2f& position, const Vector2f& dir, float _moveSpeed)
 	: super("@", Vector2((int)position.x,(int)position.y), Color::Blue),
@@ -8,6 +11,58 @@ PlayerBullet::PlayerBullet(const Vector2f& position, const Vector2f& dir, float 
 
 PlayerBullet::~PlayerBullet()
 {
+}
+
+PlayerBullet* PlayerBullet::Acquire(Level* owner, const Vector2f& position, const Vector2f& dir, float moveSpeed)
+{
+	PlayerBullet* bullet = nullptr;
+	if (!pool.empty())
+	{
+		bullet = pool.back();
+		pool.pop_back();
+		bullet->inPool = false;
+		bullet->Initialize(position, dir, moveSpeed);
+	}
+	else
+	{
+		bullet = new PlayerBullet(position, dir, moveSpeed);
+	}
+
+	if (owner && bullet->GetOwner() == nullptr)
+	{
+		owner->AddNewActor(bullet);
+	}
+
+	return bullet;
+}
+
+void PlayerBullet::ReleaseToPool()
+{
+	if (inPool)
+	{
+		return;
+	}
+
+	inPool = true;
+	isActive = false;
+	destroyRequested = false;
+
+	pool.emplace_back(this);
+}
+
+void PlayerBullet::Initialize(const Vector2f& position, const Vector2f& dir, float moveSpeed)
+{
+	isActive = true;
+	destroyRequested = false;
+
+	currPos = position;
+	this->dir = dir.Normalized();
+	this->moveSpeed = moveSpeed;
+
+	SetPosition(Vector2(
+		static_cast<int>(currPos.x),
+		static_cast<int>(currPos.y)
+	));
 }
 
 void PlayerBullet::Tick(float deltaTime)
@@ -23,7 +78,7 @@ void PlayerBullet::Tick(float deltaTime)
 	if (!IsOnScreen())
 	{
 		// 삭제 처리.
-		Destroy();
+		ReleaseToPool();
 		return;
 	}
 
@@ -45,4 +100,5 @@ void PlayerBullet::Tick(float deltaTime)
 	// 위치 갱신.
 	//SetPosition(newPosition);
 }
+
 

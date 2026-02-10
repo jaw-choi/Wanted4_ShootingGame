@@ -63,6 +63,18 @@ namespace Wanted
 			int sortingOrder = 0
 		);
 
+		// 카메라 오프셋을 적용한 월드 좌표 제출.
+		void SubmitWorld(
+			const char* text,
+			const Vector2& position,
+			Color color = Color::White,
+			int sortingOrder = 0
+		);
+
+		// 카메라 설정.
+		void SetCameraOffset(const Vector2& offset);
+		Vector2 GetCameraOffset() const;
+
 		// 경로를 받아서 제출하는 함수 overloading
 		int SubmitFromFile(
 		    const std::string& filePath, // .txt 파일 경로
@@ -91,6 +103,9 @@ namespace Wanted
 	private:
 		// 화면 크기.
 		Vector2 screenSize;
+
+		// 카메라 오프셋(월드 -> 스크린 변환용).
+		Vector2 cameraOffset = Vector2::Zero;
 
 		// 관리할 프레임 객체.
 		Frame* frame = nullptr;

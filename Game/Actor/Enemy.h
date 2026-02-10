@@ -4,6 +4,7 @@
 #include "Util/Timer.h"
 #include "Interface/IstatHolder.h"
 #include "Stat/Stat.h"
+#include <vector>
 
 using namespace Wanted;
 
@@ -28,6 +29,10 @@ public:
     // Tick.
     virtual void Tick(float deltaTime) override;
 public:
+    static Enemy* Acquire(Level* owner, const char* image, const Vector2& spawnPosition);
+    void ReleaseToPool();
+    void Initialize(const char* image, const Vector2& spawnPosition);
+
     // --- IStatHolder 인터페이스 구현 ---
     virtual inline int GetCurrentHP() const override { return enemyStats.hp; }
     virtual inline int GetMaxHP() const override { return enemyStats.maxHp; }
@@ -44,6 +49,8 @@ public:
     void OnDamaged();
 
     void MoveTo(const Actor& target);
+    void MoveToPosition(const Vector2& targetPosition);
+    void SetWorldPosition(const Vector2& newPosition);
 private:
     // 이동 방향 열거형.
     MoveDirection direction = MoveDirection::None;
@@ -54,6 +61,10 @@ private:
 
     Vector2f dir;
     Vector2f currPos;
+
+    bool inPool = false;
+
+    static std::vector<Enemy*> pool;
 
     // 발사 타이머.
     Timer shotTimer;

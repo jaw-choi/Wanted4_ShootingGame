@@ -4,6 +4,7 @@
 #include "Math/Vector2.h"
 #include "Math/Color.h"
 #include "Engine/Engine.h"
+#include "Render/Renderer.h"
 
 namespace Wanted
 {
@@ -70,14 +71,18 @@ namespace Wanted
 		inline bool IsOnScreen() const
 		{
 		    Vector2 pos = GetPosition();
+		    Vector2 cam = Renderer::Get().GetCameraOffset();
+
+		    const int screenX = pos.x - cam.x;
+		    const int screenY = pos.y - cam.y;
 
 		    int maxX = Engine::Get().GetWidth() - width - 1;
 		    int maxY = Engine::Get().GetHeight() - height - 1;
 
-		    return pos.x >= 0 &&
-			pos.y >= 0 &&
-			pos.x <= maxX &&
-			pos.y <= maxY;
+		    return screenX >= 0 &&
+			screenY >= 0 &&
+			screenX <= maxX &&
+			screenY <= maxY;
 		}
 
 		inline int GetSortingOrder() const { return sortingOrder; }

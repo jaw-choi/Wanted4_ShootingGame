@@ -57,6 +57,7 @@ namespace Wanted
 		: screenSize(screenSize)
 	{
 		instance = this;
+		cameraOffset = Vector2::Zero;
 
 		// 프레임 객체 생성.
 		const int bufferCount = screenSize.x * screenSize.y;
@@ -252,6 +253,30 @@ namespace Wanted
 		    lineOffsetY++;
 		}
 	    }
+	}
+
+	void Renderer::SubmitWorld(
+	    const char* text,
+	    const Vector2& position,
+	    Color color,
+	    int sortingOrder)
+	{
+	    const Vector2 screenPos(
+		position.x - cameraOffset.x,
+		position.y - cameraOffset.y
+	    );
+
+	    Submit(text, screenPos, color, sortingOrder);
+	}
+
+	void Renderer::SetCameraOffset(const Vector2& offset)
+	{
+	    cameraOffset = offset;
+	}
+
+	Vector2 Renderer::GetCameraOffset() const
+	{
+	    return cameraOffset;
 	}
 
 	int Renderer::SubmitFromFile(const std::string& filePath, const Vector2& position, Color color, int sortingOrder)
