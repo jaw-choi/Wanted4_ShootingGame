@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include "Actor/Actor.h"
 #include "Util/Timer.h"
@@ -18,6 +18,6 @@ private:
 	void SpawnEnemy(float deltaTime);
 
 private:
-	// »ı¼º Å¸ÀÌ¸Ó.
-	Timer timer;
+	// ìƒì„± íƒ€ì´ë¨¸.
+	Timer shotTimer;
 };

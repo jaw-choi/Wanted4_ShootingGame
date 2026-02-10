@@ -99,7 +99,6 @@
     <ClCompile Include="Actor\Player.cpp" />
     <ClCompile Include="Actor\PlayerBullet.cpp" />
     <ClCompile Include="Actor\LevelUpOverlay.cpp" />
-    <ClCompile Include="Actor\PlayerHitEffect.cpp" />
     <ClCompile Include="Level\GameLevel.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Util\Timer.cpp" />
@@ -114,7 +113,6 @@
     <ClInclude Include="Actor\Player.h" />
     <ClInclude Include="Actor\PlayerBullet.h" />
     <ClInclude Include="Actor\LevelUpOverlay.h" />
-    <ClInclude Include="Actor\PlayerHitEffect.h" />
     <ClInclude Include="Level\GameLevel.h" />
     <ClInclude Include="Util\Timer.h" />
   </ItemGroup>

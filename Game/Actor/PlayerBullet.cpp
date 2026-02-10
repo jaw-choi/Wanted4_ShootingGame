@@ -1,7 +1,8 @@
 ﻿#include "PlayerBullet.h"
 
-PlayerBullet::PlayerBullet(const Vector2f& position, const Vector2f& dir)
-	: super("@", Vector2((int)position.x,(int)position.y), Color::Blue), currPos(position), dir(dir.Normalized())
+PlayerBullet::PlayerBullet(const Vector2f& position, const Vector2f& dir, float _moveSpeed)
+	: super("@", Vector2((int)position.x,(int)position.y), Color::Blue),
+    currPos(position), dir(dir.Normalized()), moveSpeed(_moveSpeed)
 {
 }
 

@@ -21,7 +21,7 @@ public:
 
 	inline void ShowLevelUpUI() { isLevelUpUIVisible  = true; }
 	inline void HideLevelUpUI() { isLevelUpUIVisible = false; }
-
+	inline bool GetIsShowStat() { return isShowStat; }
 private:
 
 	virtual void Tick(float deltaTime) override;
@@ -46,6 +46,9 @@ private:
 	// 점수 보여주는 함수.
 	void ShowScore();
 
+	// player 스탯 보여주는 함수
+	void ShowStats();
+
 	// Debug Button Check
 	void CheckDebugButton();
 	void PrintQuadDebugText();
@@ -67,12 +70,13 @@ private:
 	// 점수 문자열.
 	char scoreString[128] = {};
 
+	bool isShowStat = false;
 	bool isLevelUpUIVisible = false;
 
 	Actor* levelUpUIInstance = nullptr;
 
 	// QuadTree 디버그 출력
-	bool showQuadTreeDebugLines = true;
+	bool showQuadTreeDebugLines = false;
 	bool showQuadTreeDebugRects = false;
 
 	int quadDebugMaxDepth = -1;

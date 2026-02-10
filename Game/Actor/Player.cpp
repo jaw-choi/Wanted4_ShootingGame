@@ -6,7 +6,6 @@
 #include "Render/Renderer.h"
 #include "Actor/LevelUpOverlay.h"
 #include "Level/GameLevel.h"
-#include "Actor/PlayerHitEffect.h"
 
 #include <algorithm>
 #include <iostream>
@@ -20,7 +19,7 @@ Player::Player()
     SetPosition(Vector2(xPosition, yPosition));
 
     // 타이머 목표 시간 설정.
-    timer.SetTargetTime(fireInterval);
+    shotTimer.SetTargetTime(fireInterval);
     xPostimer.SetTargetTime(moveXInterval);
     yPostimer.SetTargetTime(moveYInterval);
     hpTimer.SetTargetTime(invincibilityTime);
@@ -40,8 +39,8 @@ void Player::Tick(float deltaTime)
     }
     super::Tick(deltaTime);
 
-    printHp();
-    printExp();
+
+
     DrawExpStars(exp,currFullExp);
     DrawHp(GetCurrentHP(), GetMaxHP());
      //player 실시간 position 확인 - 디버그 모드 시
@@ -64,7 +63,7 @@ void Player::Tick(float deltaTime)
 
     // 경과 시간 업데이트.
     //elapsedTime += deltaTime;
-    timer.Tick(deltaTime);
+    shotTimer.Tick(deltaTime);
     xPostimer.Tick(deltaTime);
     yPostimer.Tick(deltaTime);
     hpTimer.Tick(deltaTime);
@@ -93,6 +92,24 @@ void Player::Tick(float deltaTime)
     }
 
     //FireInterval();
+}
+
+void Player::Draw()
+{
+    super::Draw();
+    if (static_cast<GameLevel*>(GetOwner())->GetIsShowStat()) {
+        //PrintI("Level: %d", level, 0, Engine::Get().GetHeight() - 4);
+        //PrintI("Hp: %d", GetCurrentHP(), 0, Engine::Get().GetHeight() - 2);
+        //PrintI("Bullet Speed: %d", bulletSpeed, 25, Engine::Get().GetHeight() - 2);
+        //PrintF("Move Speed: %.1f", GetMoveSpeed() * 10, 8, Engine::Get().GetHeight() - 2);
+        //PrintI("Exp: %d / %d", (int)exp, 0, Engine::Get().GetHeight() - 3);
+
+        PrintHp();
+        PrintExp();
+        PrintBulletSpeed();
+        PrintSpeed();
+        PrintShotSpeed();
+    }
 }
 
 void Player::MoveRight()
@@ -152,7 +169,7 @@ void Player::MoveUp()
 void Player::Fire(Vector2f dir)
 {
     // 경과 시간 초기화.
-    timer.Reset();
+    shotTimer.Reset();
 
     // 생성 위치 설정.
     Vector2f bulletPosition(
@@ -161,7 +178,7 @@ void Player::Fire(Vector2f dir)
     );
 
     // 액터 생성.
-    GetOwner()->AddNewActor(new PlayerBullet(bulletPosition,dir));
+    GetOwner()->AddNewActor(new PlayerBullet(bulletPosition,dir,bulletSpeed));
 }
 
 
@@ -219,7 +236,7 @@ bool Player::CanShoot() const
 {
     // 경과 시간 확인.
     // 발사 간격보다 더 많이 흘렀는지.
-    return timer.IsTimeOut();
+    return shotTimer.IsTimeOut();
 }
 
 bool Player::CanMoveX() const
@@ -229,16 +246,61 @@ bool Player::CanMoveX() const
     return xPostimer.IsTimeOut();
 }
 
-void Player::printHp()
+void Player::PrintF(const char* str, float stat,int x,int y) 
 {
-    sprintf_s(hpString, 128, "Hp: %d", playerStats.hp);
+    sprintf_s(buffer, 128, str, stat);
+    Renderer::Get().Submit(
+        buffer,
+        Vector2(x,y)
+    );
+}
+
+void Player::PrintI(const char* str, int stat, int x, int y)
+{
+    sprintf_s(buffer, 128, str, stat);
+    Renderer::Get().Submit(
+        buffer,
+        Vector2(x, y)
+    );
+}
+
+void Player::PrintHp()
+{
+    sprintf_s(hpString, 128, "Hp: %d", GetCurrentHP());
     Renderer::Get().Submit(
         hpString,
         Vector2(0, Engine::Get().GetHeight() - 2)
     );
 }
 
-void Player::printExp()
+void Player::PrintSpeed()
+{
+    sprintf_s(speedString, 128, "Move Speed: %.1f", GetMoveSpeed());
+    Renderer::Get().Submit(
+        speedString,
+        Vector2(8, Engine::Get().GetHeight() - 2)
+    );
+}
+
+void Player::PrintBulletSpeed()
+{
+    sprintf_s(bulletNumString, 128, "Bullet Speed: %.1f", bulletSpeed);
+    Renderer::Get().Submit(
+        bulletNumString,
+        Vector2(25, Engine::Get().GetHeight() - 2)
+    );
+}
+
+void Player::PrintShotSpeed()
+{
+    sprintf_s(bulletShotSpeedString, 128, "Shot Speed: %.1f", fireInterval);
+    Renderer::Get().Submit(
+        bulletShotSpeedString,
+        Vector2(10, Engine::Get().GetHeight() - 4)
+    );
+}
+
+void Player::PrintExp()
 {
     sprintf_s(expString, 128, "Level: %d",level);
     Renderer::Get().Submit(
@@ -272,7 +334,7 @@ void Player::PlayAnimHit()
     }
     else
     {
-        color = Color::White;
+        color = Color::Green;
         isTakenDamage = false;
         hitElapsedTime = 0.f;
     }
@@ -367,6 +429,26 @@ void Player::AutoFireAtMouse()
     Fire(dir);
 }
 
+void Player::SpeedUp()
+{
+    playerStats.moveSpeed++;
+    moveXInterval -= 0.02f;
+    moveYInterval -= 0.02f;
+    xPostimer.SetTargetTime(moveXInterval);
+    yPostimer.SetTargetTime(moveYInterval);
+}
+
+void Player::ShotTimeLevelUp()
+{
+    fireInterval -= 0.1f;
+    shotTimer.SetTargetTime(fireInterval);
+}
+
+void Player::BulletSpeedLevelUp()
+{
+    bulletSpeed += 0.5f;
+}
+
 static double Clamp01(double v)
 {
     if (v < 0.0) return 0.0;
@@ -375,7 +457,7 @@ static double Clamp01(double v)
 }
 
 
-void Player::DrawExpStars(int exp, int currFullExp)
+void Player::DrawExpStars(long long  exp, long long currFullExp)
 {
     const int screenW = Engine::Get().GetWidth();
     if (screenW <= 0) return;

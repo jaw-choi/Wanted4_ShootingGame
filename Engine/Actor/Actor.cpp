@@ -44,6 +44,7 @@ namespace Wanted
 
         // 렌더러에 데이터 제출.
         Renderer::Get().Submit(image, position, color, sortingOrder);
+        //Renderer::Get().SubmitFromFile(image, position, color, sortingOrder);
     }
 
     void Actor::Destroy()
@@ -67,38 +68,49 @@ namespace Wanted
 
     bool Actor::TestIntersect(const Actor* const other)
     {
-        // AABB (Axis Aligned Bounding Box).
-        // x 좌표만 고려하면됨. y는 크기가 1이기 때문. 
-        // Todo: =>y축 높아지면 고려해야함
+        // AABB (Axis Aligned Bounding Box)
+        // padding 포함 + 최소 1x1 보장
 
-        // 자기자신의 x좌표 정보.
-        int xMin = position.x;
-        int xMax = position.x + width - 1;
+        // --- 패딩 값 ---
+        const int paddingX = 1;
+        const int paddingY = 1;
 
-        // 충돌을 비교할 다른 액터의 x좌표 정보.
-        int otherXMin = other->GetPosition().x;
-        int otherXMax
-            = other->position.x + other->width - 1;
+        // --- 내 AABB ---
+        int xMin = position.x + paddingX;
+        int xMax = position.x + width - 1 - paddingX;
 
-        // 안겹치는 조건 확인.
+        int yMin = position.y + paddingY;
+        int yMax = position.y + height - 1 - paddingY;
 
-        // 다른 액터의 왼쪽 좌표가
-        // 내 오른쪽 좌표보다 더 오른쪽에 있는 경우.
-        if (otherXMin > xMax)
-        {
-            return false;
-        }
+        // 최소 1칸 보장 (역전 방지)
+        if (xMax < xMin) xMax = xMin;
+        if (yMax < yMin) yMax = yMin;
 
-        // 다른 액터의 오른쪽 좌표가
-        // 내 왼쪽 좌표보다 더 왼쪽에 있는 경우.
-        if (otherXMax < xMin)
-        {
-            return false;
-        }
+        // --- 상대 AABB ---
+        int otherXMin = other->position.x + paddingX;
+        int otherXMax = other->position.x + other->width - 1 - paddingX;
 
-        // y는 크기가 1이기 때문에 좌표가 같은지 여부만 확인.
-        return position.y == other->position.y;
+        int otherYMin = other->position.y + paddingY;
+        int otherYMax = other->position.y + other->height - 1 - paddingY;
+
+        // 최소 1칸 보장 (역전 방지)
+        if (otherXMax < otherXMin) otherXMax = otherXMin;
+        if (otherYMax < otherYMin) otherYMax = otherYMin;
+
+        // --- 분리 조건 (Separating Axis Theorem) ---
+
+        // x축 분리
+        if (otherXMin > xMax) return false;
+        if (otherXMax < xMin) return false;
+
+        // y축 분리
+        if (otherYMin > yMax) return false;
+        if (otherYMax < yMin) return false;
+
+        // x, y 모두 겹침
+        return true;
     }
+
 
     void Actor::ChangeImage(const char* newImage)
     {

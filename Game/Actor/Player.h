@@ -48,8 +48,13 @@ public:
     //마우스 포인터 쪽으로 발사
     void AutoFireAtMouse();
 
+    //LevelUpOverlay에서 호출하는 함수들
+    void SpeedUp();
+    void ShotTimeLevelUp();
+    void BulletSpeedLevelUp();
+
     //Exp UI
-    void DrawExpStars(int exp, int currFullExp);
+    void DrawExpStars(long long exp, long long currFullExp);
     void DrawHp(int hp,int fullHp);
 
     // Level이 등록해주는 콜백
@@ -58,6 +63,7 @@ public:
 private:
 
     virtual void Tick(float deltaTime) override;
+    virtual void Draw() override;
 
     // 오른쪽으로 이동하는 함수.
     void MoveRight();
@@ -87,15 +93,20 @@ private:
     bool CanMoveY() const;
     bool CanMoveX() const;
 
-    void printHp();
-    void printExp();
+    void PrintF(const char* str, float stat, int x, int y);
+    void PrintI(const char* str, int stat, int x, int y);
+    void PrintHp();
+    void PrintSpeed();
+    void PrintExp();
+    void PrintBulletSpeed();
+    void PrintShotSpeed();
 
     void PlayAnimHit();
 private:
     std::function<void()> onLevelUp;
 
     // 타이머 변수.
-    Timer timer;
+    Timer shotTimer;
     Timer yPostimer;
     Timer xPostimer;
     Timer hpTimer;
@@ -104,7 +115,7 @@ private:
 
 private:
     // 연사 시간 간격.
-    float fireInterval = 1.f;
+    float fireInterval = 2.f;
 
     // 연속 이동 시간 간격. 
     float moveXInterval = 0.2f;
@@ -118,9 +129,16 @@ private:
     Stat playerStats;
     long long exp;
     long long currFullExp;
+    int bulletNum = 1;
     int level;
+    float bulletSpeed = 10.f;
 
+
+    char buffer[128] = {};
     char hpString[128] = {};
+    char speedString[128] = {};
+    char bulletNumString[128] = {};
+    char bulletShotSpeedString[128] = {};
     char expString[128] = {};
     char expBarString[128] = {};
     char hpBarString[128] = {};

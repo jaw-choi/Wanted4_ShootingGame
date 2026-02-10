@@ -2,7 +2,7 @@
 #include "Player.h"
 
 
-ExpGem::ExpGem(const Vector2& position) :super(".", position, Color::Red)
+ExpGem::ExpGem(const Vector2& position) :super("+", position, Color::Red)
 {
     sortingOrder = 1;
 }

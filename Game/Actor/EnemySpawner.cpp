@@ -17,7 +17,7 @@ static const char* enemyType[] =
 EnemySpawner::EnemySpawner()
 {
 	// 적 생성 타이머 설정.
-	timer.SetTargetTime(Util::RandomRange(1.0f, 2.0f));
+	shotTimer.SetTargetTime(Util::RandomRange(1.0f, 2.0f));
 }
 
 void EnemySpawner::Tick(float deltaTime)
@@ -30,16 +30,16 @@ void EnemySpawner::Tick(float deltaTime)
 void EnemySpawner::SpawnEnemy(float deltaTime)
 {
 	// 타이머 업데이트.
-	timer.Tick(deltaTime);
+	shotTimer.Tick(deltaTime);
 
 	// 경과 시간 확인.
-	if (!timer.IsTimeOut())
+	if (!shotTimer.IsTimeOut())
 	{
 		return;
 	}
 
 	// 타이머 초기화.
-	timer.Reset();
+	shotTimer.Reset();
 
 	// 적생성.
 	// 적 개수 파악.

@@ -25,7 +25,7 @@ EnemyDestroyEffect::EnemyDestroyEffect(const Vector2& position)
 	effectSequenceCount = sizeof(sequence) / sizeof(sequence[0]);
 
 	// 다음 애니메이션까지 대기할 시간.
-	timer.SetTargetTime(sequence[0].playTime);
+	shotTimer.SetTargetTime(sequence[0].playTime);
 
 	// 색상 설정.
 	color = sequence[0].color;
@@ -36,8 +36,8 @@ void EnemyDestroyEffect::Tick(float deltaTime)
 	super::Tick(deltaTime);
 
 	// 애니메이션 재생을 위한 타이머 업데이트.
-	timer.Tick(deltaTime);
-	if (!timer.IsTimeOut())
+	shotTimer.Tick(deltaTime);
+	if (!shotTimer.IsTimeOut())
 	{
 		return;
 	}
@@ -51,13 +51,13 @@ void EnemyDestroyEffect::Tick(float deltaTime)
 	}
 
 	// 타이머 리셋.
-	timer.Reset();
+	shotTimer.Reset();
 
 	// 이펙트 프레임 업데이트.
 	++currentSequenceIndex;
 
 	// 다음 시퀀스에서 재생할 시간으로 타이머 재설정.
-	timer.SetTargetTime(sequence[currentSequenceIndex].playTime);
+	shotTimer.SetTargetTime(sequence[currentSequenceIndex].playTime);
 
 	// 애니메이션 프레임에 사용할 문자열을 액터에 복사.
 	ChangeImage(sequence[currentSequenceIndex].frame);

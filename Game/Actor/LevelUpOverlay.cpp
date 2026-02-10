@@ -36,12 +36,11 @@ void LevelUpOverlay::Tick(float deltaTime)
     }
     
 
-    // 보통 레벨업은 강제 선택이라 ESC로 닫기 막는 걸 추천
 }
 
 void LevelUpOverlay::Draw()
 {
-    Renderer::Get().Submit("LEVEL UP! Choose one:", Vector2(Engine::Get().GetWidth()/2, 0), Color::Red);
+    Renderer::Get().Submit("LEVEL UP! Choose one:", Vector2(Engine::Get().GetWidth()/2 - 12, 0), Color::Red);
 
     int currentY = 2; // 시작 위치
 
@@ -50,9 +49,9 @@ void LevelUpOverlay::Draw()
         Color col = (i == currentIndex) ? selectedColor : unselectedColor;
         //Renderer::Get().SubmitFromFile(choices[i].text, Vector2(0, 2 + i), col, 10);
         // SubmitFromFile이 파일의 줄 수만큼 계산된 '다음 Y 좌표'를 반환함
-        currentY = Renderer::Get().SubmitFromFile(choices[i].text, Vector2(Engine::Get().GetWidth() / 4, currentY), col, 10);
+        currentY = Renderer::Get().SubmitFromFile(choices[i].text, Vector2(Engine::Get().GetWidth() / 4 - 2, currentY), col, 10);
 
-         currentY += 1;
+         currentY += 2;
     }
 }
 
@@ -65,34 +64,42 @@ void LevelUpOverlay::ShowLevelUpUI()
     //dynamic_cast<GameLevel*>(GetOwner())->ShowLevelUpUI();
 
     choices.push_back({
-        "../Assets/choice1.txt",
+        "../Assets/speedUp.txt",
         [this]()
         {
-            player->AddExperience(1);
+            player->SpeedUp();
             //player->HealToFull(); // 원하면 레벨업 시 풀피 같은 처리
         }
         });
 
     choices.push_back({
-        "../Assets/choice2.txt",
+        "../Assets/shotSpeed.txt",
         [this]()
         {
-            player->AddExperience(1);
+            player->ShotTimeLevelUp();
         }
         });
 
+    // Todo:
+    //choices.push_back({
+    //    "../Assets/newWeapon.txt",
+    //    [this]()
+    //    {
+    //        player->AddExperience(1);
+    //    }
+    //    });
     choices.push_back({
-        "../Assets/choice3.txt",
-        [this]()
-        {
-            player->AddExperience(1);
-        }
-        });
-    choices.push_back({
-    "../Assets/choice4.txt",
+    "../Assets/getExp.txt",
     [this]()
     {
-        player->AddExperience(1);
+        player->AddExperience(10);
+    }
+        });
+    choices.push_back({
+    "../Assets/bulletSpeed.txt",
+    [this]()
+    {
+        player->BulletSpeedLevelUp();
     }
         });
     //shuffle

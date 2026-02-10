@@ -44,7 +44,7 @@ Enemy::Enemy(const char* image)
     currPos.y = (float)positions[random % 8].y;
     dir = Vector2f::Zero;
     // 발사 타이머 목표 시간 설정.
-    timer.SetTargetTime(Util::RandomRange(1.0f, 3.0f));
+    shotTimer.SetTargetTime(Util::RandomRange(1.0f, 3.0f));
 }
 
 Enemy::~Enemy()

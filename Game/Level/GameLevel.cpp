@@ -53,7 +53,7 @@ void GameLevel::PrintFPS(float deltaTime)
 
     Renderer::Get().Submit(
         fpsString,
-        Vector2(0, Engine::Get().GetHeight() - 3)
+        Vector2(Engine::Get().GetWidth() / 2, Engine::Get().GetHeight() - 2)
     );
 }
 
@@ -108,8 +108,9 @@ void GameLevel::Tick(float deltaTime)
 
     //Debug Active Button
     CheckDebugButton();
-
-    
+    if (isShowStat)
+        PrintFPS(deltaTime);
+    ShowStats();
 
     // QuadTree 생성.
     MakeQuadTree();
@@ -122,10 +123,6 @@ void GameLevel::Tick(float deltaTime)
     ProcessCollisionPlayerAndExpGemQuadTree();
     ProcessCollisionPlayerAndEnemyBullet();
     ProcessAstarAlgorithmPlayerAndEnemy();
-
-
-    ///
-    PrintFPS(deltaTime);
 
 
     //Level Up UI
@@ -145,6 +142,8 @@ void GameLevel::Tick(float deltaTime)
             actor->Tick(deltaTime);
         }
     }
+
+
 
 }
 
@@ -171,7 +170,8 @@ void GameLevel::Draw()
     }
 
     // 점수 보여주기.
-    ShowScore();
+    if(isShowStat)
+        ShowScore();
 
     DrawQuadTreeDebug();
 }
@@ -237,7 +237,7 @@ void GameLevel::DrawDebugRect(const Rect& rect, int depth)
         return;
     }
 
-    const int sorting = 10;
+    const int sorting = 1;
 
     // top line
     {
@@ -511,6 +511,12 @@ void GameLevel::ShowScore()
         Vector2(0, Engine::Get().GetHeight() - 1)
     );
 
+}
+
+void GameLevel::ShowStats()
+{
+    if (Input::Get().GetKeyDown('1'))
+        isShowStat = !isShowStat;
 }
 
 void GameLevel::CheckDebugButton()

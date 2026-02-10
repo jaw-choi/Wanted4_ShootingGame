@@ -56,7 +56,7 @@ private:
     Vector2f currPos;
 
     // 발사 타이머.
-    Timer timer;
+    Timer shotTimer;
 private:
     // 스탯 구조체
     Stat enemyStats;
