@@ -43,7 +43,7 @@ GameLevel::~GameLevel()
 
 void GameLevel::BeginPlay()
 {
-    super::BeginPlay();
+    super::BeginPlay();    
 
     PlayerBullet::Prewarm(this, 200);
     Enemy::Prewarm(this, 50);

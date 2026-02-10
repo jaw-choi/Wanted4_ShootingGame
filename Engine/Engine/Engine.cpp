@@ -84,6 +84,7 @@ namespace Wanted
 
 		// 엔진 루프(게임 루프).
 		// !->Not -> bool값 뒤집기.
+		BeginPlay();
 		while (!isQuit)
 		{
 			// 현재 시간 구하기.
@@ -104,7 +105,7 @@ namespace Wanted
 				input->ProcessInput();
 
 				// 프레임 처리.
-				BeginPlay();
+				//BeginPlay();
 				Tick(deltaTime);
 				Draw();
 
