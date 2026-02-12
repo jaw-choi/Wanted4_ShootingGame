@@ -25,6 +25,8 @@ public:
     virtual ~Player();
 public:
 
+    inline void SetCurrentHP(int hp) { playerStats.hp = hp; }
+    inline void SetFullExp(int exp) { currFullExp = exp; }
     // --- IStatHolder 인터페이스 구현 ---
     virtual inline int GetCurrentHP() const override { return playerStats.hp; }
     virtual inline int GetMaxHP() const override { return playerStats.maxHp; }

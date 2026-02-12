@@ -5,6 +5,7 @@
 #include "Math/QuadTree.h"
 #include <string>
 #include <vector>
+#include <chrono>
 
 using namespace Wanted;
 
@@ -62,6 +63,20 @@ private:
 	void UpdateCamera(const Player& player);
 	void DrawBackground();
 private:
+    void StartTime()
+    {
+	start_ = std::chrono::steady_clock::now();
+    }
+
+    long long GetSeconds() const
+    {
+	using namespace std::chrono;
+	return duration_cast<seconds>(steady_clock::now() - start_).count();
+    }
+
+private:
+    std::chrono::steady_clock::time_point start_{ std::chrono::steady_clock::now() };
+private:
 	//QuadTree
 	QuadTree* quadtree;
 
@@ -77,8 +92,10 @@ private:
 	// 점수 문자열.
 	char scoreString[128] = {};
 	char fpsString[128] = {};
+	char detailString[128] = {};
+	char timeString[128] = {};
 
-	bool isShowStat = false;
+	bool isShowStat = true;
 	bool isLevelUpUIVisible = false;
 
 	Actor* levelUpUIInstance = nullptr;

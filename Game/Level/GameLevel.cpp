@@ -10,6 +10,7 @@
 #include "Render/Renderer.h"
 #include "Engine/Engine.h"
 #include "Core/Input.h"
+#include "Game/Game.h"
 
 #include <set>
 #include <algorithm>
@@ -44,6 +45,7 @@ GameLevel::~GameLevel()
 void GameLevel::BeginPlay()
 {
     super::BeginPlay();    
+    StartTime();
 
     PlayerBullet::Prewarm(this, 200);
     Enemy::Prewarm(this, 50);
@@ -73,7 +75,7 @@ void GameLevel::PrintFPS(float deltaTime)
 
     Renderer::Get().Submit(
         fpsString,
-        Vector2(0, Engine::Get().GetHeight() - 1)
+        Vector2(10, Engine::Get().GetHeight() - 1), Color::White, 10
     );
 }
 
@@ -187,6 +189,18 @@ void GameLevel::Tick(float deltaTime)
 
     if (isShowStat)
         PrintFPS(deltaTime);
+
+    sprintf_s(detailString, 128, "Quad Tree Debug Key F1 ~ F4");
+    Renderer::Get().Submit(
+        detailString,
+        Vector2(20, Engine::Get().GetHeight() - 1), Color::Red, 10
+    );
+
+    sprintf_s(timeString, 128, "Play Time : %lld",GetSeconds());
+    Renderer::Get().Submit(
+        timeString,
+        Vector2(25, Engine::Get().GetHeight() - 3), Color::Red, 10
+    );
     // QuadTree 생성.
     MakeQuadTree();
     UpdateQuadTreeDebugLines();
@@ -212,8 +226,9 @@ void GameLevel::Draw()
         // 프로그램 정지.
         Sleep(2000);
 
+        Game::Get().ToggleMenu();
         // 게임 종료.
-        Engine::Get().QuitEngine();
+        //Engine::Get().QuitEngine();
     }
 
     // 점수 보여주기.
@@ -239,7 +254,7 @@ void GameLevel::DrawQuadTreeDebug()
         int y = 2; // exp/hp 바 아래부터 출력
         for (const std::string& line : quadDebugLines)
         {
-            Renderer::Get().Submit(line.c_str(), Vector2(0, y), Color::White, 10);
+            Renderer::Get().Submit(line.c_str(), Vector2(0, y), Color::White, 0);
             ++y;
             if (y >= Engine::Get().GetHeight())
             {
@@ -284,7 +299,7 @@ void GameLevel::DrawDebugRect(const Rect& rect, int depth)
         return;
     }
 
-    const int sorting = 1;
+    const int sorting = 0;
 
     // top line
     {
@@ -595,7 +610,7 @@ void GameLevel::ShowScore()
     sprintf_s(scoreString, 128, "Score: %d", score);
     Renderer::Get().Submit(
         scoreString,
-        Vector2(0, Engine::Get().GetHeight() - 1)
+        Vector2(0, Engine::Get().GetHeight() - 1), Color::White, 1
     );
 
 }

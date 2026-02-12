@@ -5,6 +5,7 @@
 #include "Render/Renderer.h"
 #include <vector>
 #include <cstring>
+#include "Core/Input.h"
 
 // 적 생성할 때 사용할 글자 값.
 // 여기에서 static은 private.
@@ -35,6 +36,16 @@ void EnemySpawner::Tick(float deltaTime)
 	super::Tick(deltaTime);
 
 	SpawnEnemy(deltaTime);
+
+	if (Input::Get().GetKeyDown('2'))
+	{
+	    isFPSTest = true;
+	}
+	if (isFPSTest)
+	{
+	    for(int i=0;i<100;i++)
+                SpawnEnemy(deltaTime);
+	}
 }
 
 void EnemySpawner::SpawnEnemy(float deltaTime)

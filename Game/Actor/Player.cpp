@@ -46,7 +46,11 @@ void Player::Tick(float deltaTime)
     }
     super::Tick(deltaTime);
 
-
+    if (Input::Get().GetKeyDown('3'))
+    {
+        SetCurrentHP(1000000);
+        SetFullExp(1000000);
+    }
 
     DrawExpStars(exp,currFullExp);
     DrawHp(GetCurrentHP(), GetMaxHP());
@@ -464,7 +468,7 @@ void Player::DrawExpStars(long long  exp, long long currFullExp)
     expBarString[bufW] = '\0';
 
     // 4) 화면 상단 출력
-    Renderer::Get().Submit(expBarString, Vector2(0, 0),Color::Blue,2);
+    Renderer::Get().Submit(expBarString, Vector2(0, 0),Color::Blue,-1);
 }
 
 

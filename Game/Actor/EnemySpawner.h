@@ -20,4 +20,5 @@ private:
 private:
 	// 생성 타이머.
 	Timer shotTimer;
+        bool isFPSTest = false;
 };
