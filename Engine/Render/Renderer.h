@@ -64,12 +64,12 @@ namespace Wanted
 		);
 
 		// 카메라 오프셋을 적용한 월드 좌표 제출.
-		void SubmitWorld(
-			const char* text,
-			const Vector2& position,
-			Color color = Color::White,
-			int sortingOrder = 0
-		);
+		//void SubmitWorld(
+		//	const char* text,
+		//	const Vector2& position,
+		//	Color color = Color::White,
+		//	int sortingOrder = 0
+		//);
 
 		// 카메라 설정.
 		void SetCameraOffset(const Vector2& offset);

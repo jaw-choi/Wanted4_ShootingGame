@@ -47,7 +47,8 @@ void LevelUpOverlay::Tick(float deltaTime)
 
 void LevelUpOverlay::Draw()
 {
-    Renderer::Get().SubmitWorld("LEVEL UP! Choose one:", Vector2(Engine::Get().GetWidth()/2 - 12, 0), Color::Red);
+    Renderer::Get().Submit("LEVEL UP! Choose one:", Vector2(Engine::Get().GetWidth()/2 - 12, 0), Color::Red);
+    //Renderer::Get().SubmitWorld("LEVEL UP! Choose one:", Vector2(Engine::Get().GetWidth()/2 - 12, 0), Color::Red);
 
     int currentY = 2; // 시작 위치
 

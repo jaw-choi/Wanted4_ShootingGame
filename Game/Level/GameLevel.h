@@ -60,7 +60,7 @@ private:
 	void PrintNoDebug();
 
 	// 카메라 및 배경
-	void UpdateCamera(const Player& player);
+	//void UpdateCamera(const Player& player);
 	void DrawBackground();
 private:
     void StartTime()

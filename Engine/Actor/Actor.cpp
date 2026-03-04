@@ -50,7 +50,8 @@ namespace Wanted
         //Renderer::Draw(position, color, image);
 
         // 렌더러에 데이터 제출.
-        Renderer::Get().SubmitWorld(image, position, color, sortingOrder);
+        Renderer::Get().Submit(image, position, color, sortingOrder);
+        //Renderer::Get().SubmitWorld(image, position, color, sortingOrder);
         //Renderer::Get().SubmitFromFile(image, position, color, sortingOrder);
     }
 

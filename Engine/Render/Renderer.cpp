@@ -199,6 +199,7 @@ namespace Wanted
 		GetCurrentBuffer()->Clear();
 	}
 
+	// 1차원 문자열 그리기
 	//void Renderer::Submit(
 	//	const char* text,
 	//	const Vector2& position,
@@ -214,6 +215,9 @@ namespace Wanted
 
 	//	renderQueue.emplace_back(command);
 	//}
+	
+
+	// 2차원 문자열도 그리기 가능
 	void Renderer::Submit(
 	    const char* text,
 	    const Vector2& position,
@@ -263,19 +267,20 @@ namespace Wanted
 	    }
 	}
 
-	void Renderer::SubmitWorld(
-	    const char* text,
-	    const Vector2& position,
-	    Color color,
-	    int sortingOrder)
-	{
-	    const Vector2 screenPos(
-		position.x - cameraOffset.x,
-		position.y - cameraOffset.y
-	    );
+	// player를 기준으로 카메라 스크롤링 적용된 Submit
+	//void Renderer::SubmitWorld(
+	//    const char* text,
+	//    const Vector2& position,
+	//    Color color,
+	//    int sortingOrder)
+	//{
+	//    const Vector2 screenPos(
+	//	position.x - cameraOffset.x,
+	//	position.y - cameraOffset.y
+	//    );
 
-	    Submit(text, screenPos, color, sortingOrder);
-	}
+	//    Submit(text, screenPos, color, sortingOrder);
+	//}
 
 	void Renderer::SetCameraOffset(const Vector2& offset)
 	{

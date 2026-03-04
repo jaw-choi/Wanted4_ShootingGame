@@ -102,17 +102,13 @@ void GameLevel::MakeQuadTree()
 
 void GameLevel::UpdateQuadTreeDebugLines()
 {
-    if (!quadtree)
-    {
-        quadDebugLines.clear();
-        quadDebugRects.clear();
-        quadDebugRenderStrings.clear();
-        return;
-    }
-
+    
     quadDebugLines.clear();
     quadDebugRects.clear();
     quadDebugRenderStrings.clear();
+
+    if (!quadtree)
+        return;
 
     if (showQuadTreeDebugLines)
     {
@@ -187,10 +183,11 @@ void GameLevel::Tick(float deltaTime)
         }
     }
 
-    if (playerForCamera)
-    {
-        UpdateCamera(*playerForCamera);
-    }
+    // Camera Update
+    //if (playerForCamera)
+    //{
+    //    UpdateCamera(*playerForCamera);
+    //}
 
     if (isShowStat)
         PrintFPS(deltaTime);
@@ -208,6 +205,7 @@ void GameLevel::Tick(float deltaTime)
     );
     // QuadTree 생성.
     MakeQuadTree();
+
     UpdateQuadTreeDebugLines();
 
 }
@@ -220,7 +218,8 @@ void GameLevel::Draw()
     if (isPlayerDead)
     {
         // 플레이어 죽음 메시지 Renderer에 제출.
-        Renderer::Get().SubmitWorld("!Dead!", playerDeadPosition);
+        //Renderer::Get().SubmitWorld("!Dead!", playerDeadPosition);
+        Renderer::Get().Submit("!Dead!", playerDeadPosition);
 
         // 점수 보여주기.
         ShowScore();
@@ -491,6 +490,7 @@ void GameLevel::ProcessCollisionPlayerAndEnemyQuadTree()
     if (quadtree && player)
     {
         // Query로 tree에서 Enemy들에 대한 정보를 가져옴
+        //quadtree.
         quadtree->Query(otherActors, player);
         for (Actor* const actor : otherActors)
         {
@@ -670,41 +670,42 @@ void GameLevel::PrintNoDebug()
     showQuadTreeDebugLines = false;
     showQuadTreeDebugRects = false;
 }
-
-void GameLevel::UpdateCamera(const Player& player)
-{
-    const int screenW = Engine::Get().GetWidth();
-    const int screenH = Engine::Get().GetHeight();
-
-    const int marginX = screenW / 5;
-    const int marginY = screenH / 5;
-
-    int camX = cameraOffset.x;
-    int camY = cameraOffset.y;
-
-    const Vector2 playerPos = player.GetPosition();
-
-    if (playerPos.x - camX < marginX)
-    {
-        camX = playerPos.x - marginX;
-    }
-    else if (playerPos.x - camX > screenW - marginX)
-    {
-        camX = playerPos.x - (screenW - marginX);
-    }
-
-    if (playerPos.y - camY < marginY)
-    {
-        camY = playerPos.y - marginY;
-    }
-    else if (playerPos.y - camY > screenH - marginY)
-    {
-        camY = playerPos.y - (screenH - marginY);
-    }
-
-    cameraOffset = Vector2(camX, camY);
-    Renderer::Get().SetCameraOffset(cameraOffset);
-}
+ 
+//
+//void GameLevel::UpdateCamera(const Player& player)
+//{
+//    const int screenW = Engine::Get().GetWidth();
+//    const int screenH = Engine::Get().GetHeight();
+//
+//    const int marginX = screenW / 5;
+//    const int marginY = screenH / 5;
+//
+//    int camX = cameraOffset.x;
+//    int camY = cameraOffset.y;
+//
+//    const Vector2 playerPos = player.GetPosition();
+//
+//    if (playerPos.x - camX < marginX)
+//    {
+//        camX = playerPos.x - marginX;
+//    }
+//    else if (playerPos.x - camX > screenW - marginX)
+//    {
+//        camX = playerPos.x - (screenW - marginX);
+//    }
+//
+//    if (playerPos.y - camY < marginY)
+//    {
+//        camY = playerPos.y - marginY;
+//    }
+//    else if (playerPos.y - camY > screenH - marginY)
+//    {
+//        camY = playerPos.y - (screenH - marginY);
+//    }
+//
+//    cameraOffset = Vector2(camX, camY);
+//    Renderer::Get().SetCameraOffset(cameraOffset);
+//}
 
 void GameLevel::DrawBackground()
 {

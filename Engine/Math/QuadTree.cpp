@@ -156,6 +156,10 @@ namespace Wanted
         if (bounds.width <= 1 || bounds.height <= 1)
             return; 
 
+        // 최대 깊이면 더이상 Split 하지 않음.
+        if (depth == maxDepth)
+            return;
+
         int midX = bounds.width  / 2;
         int midY = bounds.height / 2;
         int x = bounds.x;
