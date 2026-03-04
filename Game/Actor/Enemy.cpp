@@ -247,7 +247,7 @@ void Enemy::OnDamaged()
     GetOwner()->AddNewActor(new EnemyDestroyEffect(position));
 
     //Exp 생성
-    ExpGem::Acquire(GetOwner(), position);
+    //ExpGem::Acquire(GetOwner(), position);
 }
 
 void Enemy::MoveTo(const Actor& target)

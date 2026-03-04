@@ -120,8 +120,8 @@ private:
     float fireInterval = 2.f;
 
     // 연속 이동 시간 간격. 
-    float moveXInterval = 0.2f;
-    float moveYInterval = 0.2f;
+    float moveXInterval = 0.05f;
+    float moveYInterval = 0.05f;
 
     // 피격 시 무적 시간.
     float invincibilityTime = 1.f;
