@@ -128,6 +128,10 @@ void Player::MoveRight()
     xPostimer.Reset();
     // 오른쪽 이동 처리.
     position.x += 1;
+    if (position.x + width > Engine::Get().GetWidth())
+    {
+        position.x -= 1;
+    }
 }
 
 void Player::MoveLeft()
@@ -135,6 +139,10 @@ void Player::MoveLeft()
     xPostimer.Reset();
     // 왼쪽 이동 처리.
     position.x -= 1;
+    if (position.x < 0 )
+    {
+        position.x = 0;
+    }
 }
 
 void Player::MoveDown()
@@ -142,6 +150,11 @@ void Player::MoveDown()
     yPostimer.Reset();
     // 아래쪽 이동 처리.
     position.y += 1;
+
+    if (position.y + height > Engine::Get().GetHeight())
+    {
+        position.y -= 1;
+    }
 }
 
 void Player::MoveUp()
@@ -149,6 +162,10 @@ void Player::MoveUp()
     yPostimer.Reset();
     // 위쪽 이동 처리.
     position.y -= 1;
+    if (position.y < 0)
+    {
+        position.y = 0;
+    }
 }
 
 void Player::Fire(Vector2f dir)
