@@ -114,4 +114,6 @@ private:
 
 	Vector2 cameraOffset = Vector2::Zero;
 	std::vector<std::string> backgroundLines;
+
+        bool isStarted = false;
 };

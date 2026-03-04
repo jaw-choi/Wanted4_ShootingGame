@@ -45,10 +45,15 @@ GameLevel::~GameLevel()
 void GameLevel::BeginPlay()
 {
     super::BeginPlay();    
+
+    if (isStarted)
+        return;
+    isStarted = true;
+
     StartTime();
 
     PlayerBullet::Prewarm(this, 200);
-    Enemy::Prewarm(this, 50);
+    Enemy::Prewarm(this, 5000);
     ExpGem::Prewarm(this, 150);
 
     ProcessAddAndDestroyActors();
@@ -137,8 +142,8 @@ void GameLevel::Tick(float deltaTime)
 
     // 충돌 판정 처리.
     ProcessCollisionPlayerBulletAndEnemy();
-    //ProcessCollisionPlayerAndEnemyAABB();
-    ProcessCollisionPlayerAndEnemyQuadTree();
+    ProcessCollisionPlayerAndEnemyAABB();
+    //ProcessCollisionPlayerAndEnemyQuadTree();
     ProcessCollisionPlayerAndExpGemQuadTree();
     ProcessCollisionPlayerAndEnemyBullet();
     ProcessAstarAlgorithmPlayerAndEnemy();
@@ -226,6 +231,8 @@ void GameLevel::Draw()
         // 프로그램 정지.
         Sleep(2000);
 
+        isPlayerDead = false;
+        isStarted = false;
         Game::Get().ToggleMenu();
         // 게임 종료.
         //Engine::Get().QuitEngine();

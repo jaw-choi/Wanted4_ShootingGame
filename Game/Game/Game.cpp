@@ -53,6 +53,13 @@ void Game::ToggleMenu()
     int nextState = 1 - stateIndex;	// one - x.
     state = (State)nextState;		// static_cast.
 
+    // 게임 레벨(index 1)로 전환하는 경우, 레벨을 새로 생성하여 초기화.
+    if (state == State::Menu)
+    {
+        delete levels[1];
+        levels[1] = new GameLevel();
+    }
+
     // 메인 레벨 변경.
     mainLevel = levels[static_cast<int>(state)];
 }
