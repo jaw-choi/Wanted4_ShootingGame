@@ -28,6 +28,7 @@ public:
 
     // Tick.
     virtual void Tick(float deltaTime) override;
+    virtual void Draw() override;
 public:
     static Enemy* Acquire(Level* owner, const char* image, const Vector2& spawnPosition);
     static void Prewarm(Level* owner, int count);

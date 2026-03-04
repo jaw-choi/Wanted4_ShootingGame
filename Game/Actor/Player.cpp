@@ -18,7 +18,7 @@
 #endif
 
 Player::Player()
-    : super("<+A+>", Vector2::Zero, Color::Green), playerStats(10, 10, 0.2f, 1), exp(0), currFullExp(10), level(1)
+    : super("../Assets/player.txt", Vector2::Zero, Color::Green), playerStats(10, 10, 0.2f, 1), exp(0), currFullExp(10), level(1)
 {
     // 생성 위치 설정.
     int xPosition = (Engine::Get().GetWidth() / 2) - (width / 2);
@@ -81,19 +81,19 @@ void Player::Tick(float deltaTime)
     // 좌우 방향키 입력처리.
     if (Input::Get().GetKey('A') || Input::Get().GetKey(VK_LEFT))
     {
-        MoveLeftInterval();
+        MoveLeft();
     }
     if (Input::Get().GetKey('D') || Input::Get().GetKey(VK_RIGHT))
     {
-        MoveRightInterval();
+        MoveRight();
     }
     if (Input::Get().GetKey('S') || Input::Get().GetKey(VK_DOWN))
     {
-        MoveDownInterval();
+        MoveDown();
     }
     if (Input::Get().GetKey('W') || Input::Get().GetKey(VK_UP))
     {
-        MoveUpInterval();
+        MoveUp();
     }
 
     if (isTakenDamage)
@@ -107,7 +107,8 @@ void Player::Tick(float deltaTime)
 
 void Player::Draw()
 {
-    super::Draw();
+    //super::Draw();
+    Renderer::Get().SubmitFromFile(image, position, color, sortingOrder);
     if (static_cast<GameLevel*>(GetOwner())->GetIsShowStat()) {
         //PrintI("Level: %d", level, 0, Engine::Get().GetHeight() - 4);
         //PrintI("Hp: %d", GetCurrentHP(), 0, Engine::Get().GetHeight() - 2);
@@ -127,10 +128,10 @@ void Player::MoveRight()
 {
     xPostimer.Reset();
     // 오른쪽 이동 처리.
-    position.x += 1;
+    position.x += 5;
     if (position.x + width > Engine::Get().GetWidth())
     {
-        position.x -= 1;
+        position.x -= 5;
     }
 }
 
@@ -149,11 +150,11 @@ void Player::MoveDown()
 {
     yPostimer.Reset();
     // 아래쪽 이동 처리.
-    position.y += 1;
+    position.y += 5;
 
     if (position.y + height > Engine::Get().GetHeight())
     {
-        position.y -= 1;
+        position.y -= 5;
     }
 }
 

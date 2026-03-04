@@ -18,11 +18,11 @@
 
 static const char* enemyType[] =
 {
-	";:^:;",
-	"zZwZz",
-	"oO@Oo",
-	"<-=->",
-	")qOp(",
+	"../Assets/enemy1.txt",
+	"../Assets/enemy2.txt",
+	"../Assets/enemy3.txt",
+	"../Assets/enemy4.txt",
+	"../Assets/enemy5.txt",
 };
 
 EnemySpawner::EnemySpawner()

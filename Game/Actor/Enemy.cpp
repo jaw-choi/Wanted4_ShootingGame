@@ -223,6 +223,11 @@ void Enemy::Tick(float deltaTime)
 
 }
 
+void Enemy::Draw()
+{
+    Renderer::Get().SubmitFromFile(image, position, color, sortingOrder);
+}
+
 void Enemy::TakeDamage(int amount)
 {
     enemyStats.hp -= amount;

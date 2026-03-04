@@ -5,6 +5,8 @@
 
 #include <iostream>
 #include <Windows.h>
+#include <fstream>
+#include <string>
 
 #include <crtdbg.h>
 #ifdef _DEBUG
@@ -15,15 +17,45 @@
 
 namespace Wanted
 {
+    static bool GetAsciiSizeFromFile(const char* path, int& outW, int& outH)
+    {
+        outW = 0;
+        outH = 0;
+
+        std::ifstream in(path);
+        if (!in.is_open()) return false;
+
+        std::string line;
+
+        // 첫 줄 읽기 (width 결정)
+        if (!std::getline(in, line)) return false;
+        if (!line.empty() && line.back() == '\r') line.pop_back(); // CRLF 보정
+
+        outW = (int)line.size();
+        outH = 1;
+
+        // 나머지 줄 수 세기 (height)
+        while (std::getline(in, line))
+            outH++;
+
+        return true;
+    }
     Actor::Actor(
         const char* image,
         const Vector2& position,
         Color color)
         : position(position), color(color)
     {
+        if (!GetAsciiSizeFromFile(image, width, height))
+        {
+            // 실패 시 안전 처리(원하면 예외/로그로 바꿔도 됨)
+            width = 0;
+            height = 0;
+            this->image = nullptr;
+            return;
+        }
+
         // 문자열 복사.
-        height = 1;
-        width = static_cast<int>(strlen(image));
         this->image = new char[width + 1];
         strcpy_s(this->image, width + 1, image);
     }
