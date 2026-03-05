@@ -7,6 +7,7 @@
 #include "Actor/MouseTester.h"
 #include "Actor/ExpGem.h"
 #include "Actor/LevelUpOverlay.h"
+#include "Actor/Obstacle.h"
 #include "Render/Renderer.h"
 #include "Engine/Engine.h"
 #include "Core/Input.h"
@@ -14,6 +15,7 @@
 
 #include <set>
 #include <algorithm>
+#include <iostream>
 
 #include <crtdbg.h>
 #ifdef _DEBUG
@@ -121,7 +123,9 @@ GameLevel::GameLevel()
     AddNewActor(new MouseTester());
     quadtree = new QuadTree(Rect(0, 0, Engine::Get().GetWidth(), Engine::Get().GetHeight()), 4, 0, 4);
 
-    Renderer::Get().SetCameraOffset(cameraOffset);
+    //Renderer::Get().SetCameraOffset(cameraOffset);
+
+    LoadMap("map.txt");
 }
 
 GameLevel::~GameLevel()
@@ -155,41 +159,44 @@ void GameLevel::PrintFPS(float deltaTime)
     accumTime += deltaTime;
     frameCount++;
 
-    if (accumTime >= 0.25)
+    if (accumTime >= 0.01)
     {
         cachedFps = (double)frameCount / accumTime;
         accumTime = 0.0;
         frameCount = 0;
     }
 
-    const int fpsInt = (int)(cachedFps + 0.5);
+    //const int fpsInt = (int)(cachedFps + 0.5);
 
-    const int hudW = 30;
-    const int hudH = 16; // big number(scale=2) + text 줄 고려
-    const int hudX = 1;
-    const int hudY = Engine::Get().GetHeight() - hudH - 1;
+    //const int hudW = 30;
+    //const int hudH = 16; // big number(scale=2) + text 줄 고려
+    //const int hudX = 1;
+    //const int hudY = Engine::Get().GetHeight() - hudH - 1;
 
-    // 1) HUD 영역 싹 비우기 (배경)
-    ClearRect(Vector2(hudX, hudY), hudW, hudH, Color::Black, 9);
+    //// 1) HUD 영역 싹 비우기 (배경)
+    //ClearRect(Vector2(hudX, hudY), hudW, hudH, Color::Black, 9);
 
-    // 2) 테두리(선택)
-    DrawBox(Vector2(hudX, hudY), hudW, hudH, Color::White, 10);
+    //// 2) 테두리(선택)
+    //DrawBox(Vector2(hudX, hudY), hudW, hudH, Color::White, 10);
 
-    // 3) 큰 FPS 숫자 (박스 안쪽에)
-    DrawBigNumber3x5(fpsInt, Vector2(hudX + 2, hudY + 2), Color::White, 10, 2);
+    //// 3) 큰 FPS 숫자 (박스 안쪽에)
+    //DrawBigNumber3x5(fpsInt, Vector2(hudX + 2, hudY + 2), Color::White, 10, 2);
 
-    // 4) 작은 텍스트
-    char info[128];
-    sprintf_s(info, 128, "dt: %.4f", deltaTime);
-    Renderer::Get().Submit(info, Vector2(hudX + 2, hudY + hudH - 2), Color::White, 10);
+    //// 4) 작은 텍스트
+    //char info[128];
+    //sprintf_s(info, 128, "dt: %.4f", deltaTime);
+    //Renderer::Get().Submit(info, Vector2(hudX + 2, hudY + hudH - 2), Color::White, 10);
+
+
+
     // Normal Text
-    ////static char fpsString[128]; 
-    //sprintf_s(fpsString, 128, "FPS: %.1f  dt: %.4f", cachedFps, deltaTime);
+    //static char fpsString[128]; 
+    sprintf_s(fpsString, 128, "FPS: %.1f  dt: %.4f", cachedFps, deltaTime);
 
-    //Renderer::Get().Submit(
-    //    fpsString,
-    //    Vector2(10, Engine::Get().GetHeight() - 1), Color::White, 10
-    //);
+    Renderer::Get().Submit(
+        fpsString,
+        Vector2(10, Engine::Get().GetHeight() - 1), Color::White, 10
+    );
 }
 
 void GameLevel::MakeQuadTree()
@@ -815,50 +822,148 @@ void GameLevel::PrintNoDebug()
 //    Renderer::Get().SetCameraOffset(cameraOffset);
 //}
 
+//void GameLevel::DrawBackground()
+//{
+//    const int screenW = Engine::Get().GetWidth();
+//    const int screenH = Engine::Get().GetHeight();
+//
+//    if (backgroundLines.size() != static_cast<size_t>(screenH))
+//    {
+//        backgroundLines.assign(static_cast<size_t>(screenH), std::string(screenW, ' '));
+//    }
+//    else
+//    {
+//        for (std::string& line : backgroundLines)
+//        {
+//            if (static_cast<int>(line.size()) != screenW)
+//            {
+//                line.assign(screenW, ' ');
+//            }
+//        }
+//    }
+//
+//    for (int y = 0; y < screenH; ++y)
+//    {
+//        std::string& line = backgroundLines[static_cast<size_t>(y)];
+//        for (int x = 0; x < screenW; ++x)
+//        {
+//            const int worldX = x + cameraOffset.x;
+//            const int worldY = y + cameraOffset.y;
+//
+//            char c = ' ';
+//            const int seed = (worldX * 37 + worldY * 17);
+//            if (seed % 23 == 0)
+//            {
+//                c = '`';
+//            }
+//            else if (seed % 29 == 0)
+//            {
+//                c = ',';
+//            }
+//
+//            line[static_cast<size_t>(x)] = c;
+//        }
+//
+//        Renderer::Get().Submit(line.c_str(), Vector2(0, y), Color::Green, 0);
+//    }
+//}
+
 void GameLevel::DrawBackground()
 {
     const int screenW = Engine::Get().GetWidth();
     const int screenH = Engine::Get().GetHeight();
 
+    // 매번 할당하지 않도록 멤버 변수로 관리하는 것을 추천합니다.
     if (backgroundLines.size() != static_cast<size_t>(screenH))
     {
         backgroundLines.assign(static_cast<size_t>(screenH), std::string(screenW, ' '));
-    }
-    else
-    {
-        for (std::string& line : backgroundLines)
-        {
-            if (static_cast<int>(line.size()) != screenW)
-            {
-                line.assign(screenW, ' ');
-            }
-        }
     }
 
     for (int y = 0; y < screenH; ++y)
     {
         std::string& line = backgroundLines[static_cast<size_t>(y)];
+        const int worldY = y;
+
         for (int x = 0; x < screenW; ++x)
         {
-            const int worldX = x + cameraOffset.x;
-            const int worldY = y + cameraOffset.y;
+            const int worldX = x;
+            char c = ' '; // 기본 땅
 
-            char c = ' ';
-            const int seed = (worldX * 37 + worldY * 17);
-            if (seed % 23 == 0)
+            // 월드 맵 범위 내에 있는지 확인
+            if (worldY >= 0 && worldY < (int)worldMap.size() &&
+                worldX >= 0 && worldX < (int)worldMap[worldY].size())
             {
-                c = '`';
+                // '1'이면 벽('#'), '0'이면 공백 또는 장식
+                if (worldMap[worldY][worldX] == '1')
+                {
+                    c = '#';
+                }
+                else
+                {
+                    // 기존에 사용하시던 배경 장식(`, ,) 로직을 여기에 넣으면 더 예쁩니다.
+                    const int seed = (worldX * 37 + worldY * 17);
+                    if (seed % 23 == 0) c = '`';
+                    else if (seed % 29 == 0) c = ',';
+                }
             }
-            else if (seed % 29 == 0)
-            {
-                c = ',';
-            }
-
-            line[static_cast<size_t>(x)] = c;
+            line[x] = c;
         }
-
         Renderer::Get().Submit(line.c_str(), Vector2(0, y), Color::Green, 0);
     }
+}
+
+void GameLevel::LoadMap(const char* filename)
+{
+    char path[2048] = {};
+    sprintf_s(path, 2048, "../Assets/%s", filename);
+
+    FILE* file = nullptr;
+    fopen_s(&file, path, "rt");
+
+    if (!file)
+    {
+        std::cerr << "Failed to open map file.\n";
+        __debugbreak();
+        return;
+    }
+
+    // 파일 크기 파악
+    fseek(file, 0, SEEK_END);
+    size_t fileSize = ftell(file);
+    rewind(file);
+
+    // 데이터 읽기
+    char* data = new char[fileSize + 1];
+    size_t readSize = fread(data, sizeof(char), fileSize, file);
+    data[readSize] = '\0';
+
+    // worldMap 초기화
+    worldMap.clear();
+    worldMap.push_back("");
+    int currentRow = 0;
+
+    for (size_t i = 0; i < readSize; ++i)
+    {
+        char mapCharacter = data[i];
+
+        // 개행 문자 처리 (\r\n 또는 \n 대응)
+        if (mapCharacter == '\n')
+        {
+            worldMap.push_back("");
+            currentRow++;
+            continue;
+        }
+        if (mapCharacter == '\r') continue;
+
+        // 단순히 문자를 worldMap 행에 추가
+        worldMap[currentRow] += mapCharacter;
+    }
+
+    // 마지막 빈 줄 정리
+    if (!worldMap.empty() && worldMap.back().empty()) worldMap.pop_back();
+
+    delete[] data;
+    fclose(file);
 }
 
 void GameLevel::ProcessAstarAlgorithmPlayerAndEnemy()

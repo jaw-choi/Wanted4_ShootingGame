@@ -124,10 +124,10 @@ void Player::MoveRight()
 {
     xPostimer.Reset();
     // 오른쪽 이동 처리.
-    position.x += 10;
+    position.x += 2;
     if (position.x + width > Engine::Get().GetWidth())
     {
-        position.x -= 10;
+        position.x -= 2;
     }
 }
 
@@ -135,7 +135,7 @@ void Player::MoveLeft()
 {
     xPostimer.Reset();
     // 왼쪽 이동 처리.
-    position.x -= 10;
+    position.x -= 2;
     if (position.x < 0 )
     {
         position.x = 0;
@@ -146,11 +146,11 @@ void Player::MoveDown()
 {
     yPostimer.Reset();
     // 아래쪽 이동 처리.
-    position.y += 5;
+    position.y += 1;
 
     if (position.y + height > Engine::Get().GetHeight())
     {
-        position.y -= 5;
+        position.y -= 1;
     }
 }
 
@@ -158,7 +158,7 @@ void Player::MoveUp()
 {
     yPostimer.Reset();
     // 위쪽 이동 처리.
-    position.y -= 5;
+    position.y -= 1;
     if (position.y < 0)
     {
         position.y = 0;

@@ -28,6 +28,7 @@ public:
 	inline bool GetIsShowStat() { return isShowStat; }
 private:
 
+
 	virtual void BeginPlay() override;
 	virtual void Tick(float deltaTime) override;
 	virtual void Draw() override;
@@ -63,6 +64,9 @@ private:
 	// 카메라 및 배경
 	//void UpdateCamera(const Player& player);
 	void DrawBackground();
+
+	// 게임에서 사용할 맵을 로드하는 함수.
+	void LoadMap(const char* filename);
 private:
     void StartTime()
     {
@@ -117,4 +121,5 @@ private:
 	std::vector<std::string> backgroundLines;
 
         bool isStarted = false;
+	std::vector<std::string> worldMap;
 };

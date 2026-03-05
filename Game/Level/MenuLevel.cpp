@@ -84,20 +84,22 @@ void MenuLevel::Draw()
     //// 텍스트 출력.
     //std::cout << "Sokoban Game\n\n";
 
-    int nextLine = Renderer::Get().SubmitFromFile("../Assets/title.txt", {Engine::Get().GetWidth() / 4 + 150, Engine::Get().GetHeight() / 4} );
-    int prev = Engine::Get().GetHeight() / 16 + nextLine;
-    int padding = 0;
+    int nextLine = Renderer::Get().SubmitFromFile("../Assets/title.txt", {Engine::Get().GetWidth() / 4 + 50, Engine::Get().GetHeight() / 4} );
+
     // 메뉴 아이템 출력.
+    int prev = nextLine;
+    int padding = -30;
     for (int ix = 0; ix < static_cast<int>(items.size()); ++ix)
     {
 	// 아이템 색상 확인 (선택됐는지 여부).
-	if (ix == 1)
-	    padding = 10;
+
 	Color textColor =
 	    (ix == currentIndex) ? selectedColor : unselectedColor;
+	if (ix == 1)
+	    padding += 3;
 	nextLine = Renderer::Get().SubmitFromFile(
 	    items[ix]->text,
-	    Vector2(Engine::Get().GetWidth() / 2 - 80 + padding ,prev+50),
+	    Vector2(Engine::Get().GetWidth() / 2 + padding,abs(Engine::Get().GetHeight() / 2 - prev) + prev),
 	    textColor
 	);
 	prev = nextLine;
