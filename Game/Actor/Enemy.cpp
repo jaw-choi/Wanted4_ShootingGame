@@ -22,7 +22,7 @@ std::vector<Enemy*> Enemy::pool;
 
 
 Enemy::Enemy(const char* image)
-    : super(image), enemyStats(10, 10, 6.f, 1)
+    : super(image), enemyStats(10, 10, 50.f, 1)
 {
     int random = Util::Random(0, 15);
     
@@ -40,20 +40,54 @@ Enemy::Enemy(const char* image)
     int midX = maxX / 2;
     int midY = maxY / 2;
 
-    std::vector<Vector2> positions =
+    std::vector<Vector2> positions;
+    positions.reserve(16);
+
+    const int n = 5;          // 5x5 둘레 = 16
+    const int steps = n - 1;  // 4
+
+    auto LerpInt = [](int a, int b, int i, int steps)
+	{
+	    return a + (b - a) * i / steps;
+	};
+
+    // Top edge (y=0): 5
+    for (int i = 0; i < n; ++i)
     {
-        {0, 0},        {midX, 0},        {maxX, 0},
-        {0, midY},                       {maxX, midY},
-        {0, maxY},     {midX, maxY},     {maxX, maxY },
-    };
+	int x = LerpInt(0, maxX, i, steps);
+	positions.push_back({ x, 0 });
+    }
+
+    // Right edge (x=maxX): 3 (코너 중복 제거)
+    for (int i = 1; i < n - 1; ++i)
+    {
+	int y = LerpInt(0, maxY, i, steps);
+	positions.push_back({ maxX, y });
+    }
+
+    // Bottom edge (y=maxY): 5
+    for (int i = 0; i < n; ++i)
+    {
+	int x = LerpInt(0, maxX, i, steps);
+	positions.push_back({ x, maxY });
+    }
+
+    // Left edge (x=0): 3 (코너 중복 제거)
+    for (int i = 1; i < n - 1; ++i)
+    {
+	int y = LerpInt(0, maxY, i, steps);
+	positions.push_back({ 0, y });
+    }
+
+    // positions.size() == 16
 
 
     // 이동 방향에 따른 적 위치 설정.
-    currPos.x = (float)positions[random % 8].x;
-    currPos.y = (float)positions[random % 8].y;
+    currPos.x = (float)positions[random % positions.size()].x;
+    currPos.y = (float)positions[random % positions.size()].y;
     dir = Vector2f::Zero;
     // 발사 타이머 목표 시간 설정.
-    shotTimer.SetTargetTime(Util::RandomRange(1.0f, 3.0f));
+    //shotTimer.SetTargetTime(Util::RandomRange(1.0f, 3.0f));
 }
 
 Enemy::~Enemy()
@@ -127,7 +161,6 @@ void Enemy::Initialize(const char* image, const Vector2& spawnPosition)
 
 	ChangeImage(image);
 
-	enemyStats = Stat(10, 10, 6.f, 1);
 	moveSpeed = enemyStats.moveSpeed;
 	direction = MoveDirection::None;
 	dir = Vector2f::Zero;

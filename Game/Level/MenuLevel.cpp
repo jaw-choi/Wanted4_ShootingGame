@@ -9,7 +9,7 @@ MenuLevel::MenuLevel()
 {
     // 메뉴 아이템 생성.
     items.emplace_back(new MenuItem(
-	"Start Game",
+	"../Assets/startGame.txt",
 	[]()
 	{
 	    // 메뉴 토글 함수 호출.
@@ -18,7 +18,7 @@ MenuLevel::MenuLevel()
     ));
 
     items.emplace_back(new MenuItem(
-	"Quit Game",
+	"../Assets/quitGame.txt",
 	[]()
 	{
 	    // 게임 종료.
@@ -84,20 +84,23 @@ void MenuLevel::Draw()
     //// 텍스트 출력.
     //std::cout << "Sokoban Game\n\n";
 
-    Renderer::Get().Submit("Vampire Surviver Game", {Engine::Get().GetWidth() / 2 - 11, Engine::Get().GetHeight() / 2 - 5} );
-
+    int nextLine = Renderer::Get().SubmitFromFile("../Assets/title.txt", {Engine::Get().GetWidth() / 4 + 150, Engine::Get().GetHeight() / 4} );
+    int prev = Engine::Get().GetHeight() / 16 + nextLine;
+    int padding = 0;
     // 메뉴 아이템 출력.
     for (int ix = 0; ix < static_cast<int>(items.size()); ++ix)
     {
 	// 아이템 색상 확인 (선택됐는지 여부).
+	if (ix == 1)
+	    padding = 10;
 	Color textColor =
 	    (ix == currentIndex) ? selectedColor : unselectedColor;
-
-	Renderer::Get().Submit(
+	nextLine = Renderer::Get().SubmitFromFile(
 	    items[ix]->text,
-	    Vector2(Engine::Get().GetWidth() / 2 - 6 + ix, Engine::Get().GetHeight() / 2 - 3 + ix*2),
+	    Vector2(Engine::Get().GetWidth() / 2 - 80 + padding ,prev+50),
 	    textColor
 	);
+	prev = nextLine;
 
 	// 색상 설정.
 	//Util::SetConsoleTextColor(textColor);
@@ -106,3 +109,4 @@ void MenuLevel::Draw()
 	//std::cout << items[ix]->text << "\n";
     }
 }
+

@@ -31,6 +31,8 @@ Player::Player()
     yPostimer.SetTargetTime(moveYInterval);
     hpTimer.SetTargetTime(invincibilityTime);
     sortingOrder = 5;
+    SetCurrentHP(1000000);
+    SetFullExp(1000000);
 }
 
 Player::~Player()
@@ -46,14 +48,8 @@ void Player::Tick(float deltaTime)
     }
     super::Tick(deltaTime);
 
-    if (Input::Get().GetKeyDown('3'))
-    {
-        SetCurrentHP(1000000);
-        SetFullExp(1000000);
-    }
-
-    DrawExpStars(exp,currFullExp);
-    DrawHp(GetCurrentHP(), GetMaxHP());
+    //DrawExpStars(exp,currFullExp);
+    //DrawHp(GetCurrentHP(), GetMaxHP());
      //player 실시간 position 확인 - 디버그 모드 시
     //char buffer[256] = {};
     //sprintf_s(
@@ -74,10 +70,10 @@ void Player::Tick(float deltaTime)
 
     // 경과 시간 업데이트.
     //elapsedTime += deltaTime;
-    shotTimer.Tick(deltaTime);
-    xPostimer.Tick(deltaTime);
-    yPostimer.Tick(deltaTime);
-    hpTimer.Tick(deltaTime);
+    //shotTimer.Tick(deltaTime);
+    //xPostimer.Tick(deltaTime);
+    //yPostimer.Tick(deltaTime);
+    //hpTimer.Tick(deltaTime);
     // 좌우 방향키 입력처리.
     if (Input::Get().GetKey('A') || Input::Get().GetKey(VK_LEFT))
     {
@@ -128,10 +124,10 @@ void Player::MoveRight()
 {
     xPostimer.Reset();
     // 오른쪽 이동 처리.
-    position.x += 5;
+    position.x += 10;
     if (position.x + width > Engine::Get().GetWidth())
     {
-        position.x -= 5;
+        position.x -= 10;
     }
 }
 
@@ -139,7 +135,7 @@ void Player::MoveLeft()
 {
     xPostimer.Reset();
     // 왼쪽 이동 처리.
-    position.x -= 1;
+    position.x -= 10;
     if (position.x < 0 )
     {
         position.x = 0;
@@ -162,7 +158,7 @@ void Player::MoveUp()
 {
     yPostimer.Reset();
     // 위쪽 이동 처리.
-    position.y -= 1;
+    position.y -= 5;
     if (position.y < 0)
     {
         position.y = 0;

@@ -22,6 +22,93 @@
 #define DBG_NEW new
 #endif
 
+static void ClearRect(const Vector2& topLeft, int w, int h, Color bg, int z)
+{
+    if (w <= 0 || h <= 0) return;
+
+    // 최대 폭만큼 공백 스트링을 만들어 두고 잘라 쓰기
+    static std::string spaces;
+    if ((int)spaces.size() < w)
+        spaces.assign(w, ' ');
+
+    const char* line = spaces.c_str(); // 길이 w만큼 공백
+
+    for (int y = 0; y < h; ++y)
+    {
+        Renderer::Get().Submit(
+            line,
+            Vector2(topLeft.x, topLeft.y + y),
+            bg,
+            z
+        );
+    }
+}
+
+static void DrawBox(const Vector2& topLeft, int w, int h, Color color, int z)
+{
+    if (w < 2 || h < 2) return;
+
+    std::string top(w, '#');
+    std::string mid(w, ' ');
+    mid.front() = '#';
+    mid.back() = '#';
+
+    Renderer::Get().Submit(top.c_str(), Vector2(topLeft.x, topLeft.y), color, z);
+    for (int y = 1; y < h - 1; ++y)
+        Renderer::Get().Submit(mid.c_str(), Vector2(topLeft.x, topLeft.y + y), color, z);
+    Renderer::Get().Submit(top.c_str(), Vector2(topLeft.x, topLeft.y + h - 1), color, z);
+}
+
+static const char* DIGIT_3x5[10][5] =
+{
+    {"###","# #","# #","# #","###"}, //0
+    {" ##","  #","  #","  #","###"}, //1
+    {"###","  #","###","#  ","###"}, //2
+    {"###","  #","###","  #","###"}, //3
+    {"# #","# #","###","  #","  #"}, //4
+    {"###","#  ","###","  #","###"}, //5
+    {"###","#  ","###","# #","###"}, //6
+    {"###","  #","  #","  #","  #"}, //7
+    {"###","# #","###","# #","###"}, //8
+    {"###","# #","###","  #","###"}, //9
+};
+
+static void DrawBigNumber3x5(int value, const Vector2& pos, Color color, int z, int scale = 2)
+{
+    if (value < 0) value = 0;
+
+    std::string s = std::to_string(value);
+
+    // 한 줄(3x5의 row 하나)을 scale에 맞게 늘려서 Submit
+    for (int row = 0; row < 5; ++row)
+    {
+        std::string line;
+
+        for (char ch : s)
+        {
+            int d = ch - '0';
+            const char* pat = DIGIT_3x5[d][row];
+
+            // 가로 스케일
+            for (int i = 0; i < 3; ++i)
+                line.append(scale, pat[i]);
+
+            line.append(scale, ' '); // 숫자 간격
+        }
+
+        // 세로 스케일: 같은 줄을 scale번 반복 출력
+        for (int sy = 0; sy < scale; ++sy)
+        {
+            Renderer::Get().Submit(
+                line.c_str(),
+                Vector2(pos.x, pos.y + row * scale + sy),
+                color,
+                z
+            );
+        }
+    }
+}
+
 GameLevel::GameLevel()
 {
     // Player 액터 추가.
@@ -68,20 +155,41 @@ void GameLevel::PrintFPS(float deltaTime)
     accumTime += deltaTime;
     frameCount++;
 
-    if (accumTime >= 0.01)
+    if (accumTime >= 0.25)
     {
         cachedFps = (double)frameCount / accumTime;
         accumTime = 0.0;
         frameCount = 0;
     }
 
-    //static char fpsString[128]; 
-    sprintf_s(fpsString, 128, "FPS: %.1f  dt: %.4f", cachedFps, deltaTime);
+    const int fpsInt = (int)(cachedFps + 0.5);
 
-    Renderer::Get().Submit(
-        fpsString,
-        Vector2(10, Engine::Get().GetHeight() - 1), Color::White, 10
-    );
+    const int hudW = 30;
+    const int hudH = 16; // big number(scale=2) + text 줄 고려
+    const int hudX = 1;
+    const int hudY = Engine::Get().GetHeight() - hudH - 1;
+
+    // 1) HUD 영역 싹 비우기 (배경)
+    ClearRect(Vector2(hudX, hudY), hudW, hudH, Color::Black, 9);
+
+    // 2) 테두리(선택)
+    DrawBox(Vector2(hudX, hudY), hudW, hudH, Color::White, 10);
+
+    // 3) 큰 FPS 숫자 (박스 안쪽에)
+    DrawBigNumber3x5(fpsInt, Vector2(hudX + 2, hudY + 2), Color::White, 10, 2);
+
+    // 4) 작은 텍스트
+    char info[128];
+    sprintf_s(info, 128, "dt: %.4f", deltaTime);
+    Renderer::Get().Submit(info, Vector2(hudX + 2, hudY + hudH - 2), Color::White, 10);
+    // Normal Text
+    ////static char fpsString[128]; 
+    //sprintf_s(fpsString, 128, "FPS: %.1f  dt: %.4f", cachedFps, deltaTime);
+
+    //Renderer::Get().Submit(
+    //    fpsString,
+    //    Vector2(10, Engine::Get().GetHeight() - 1), Color::White, 10
+    //);
 }
 
 void GameLevel::MakeQuadTree()

@@ -3,8 +3,11 @@
 #include "Level/Level.h"
 #include "Math/Color.h"
 #include <vector>
+#include <fstream>
+#include <string>
 
 using namespace Wanted;
+
 
 // 메뉴 아이템 구조체.
 struct MenuItem
@@ -20,7 +23,7 @@ struct MenuItem
 	this->text = new char[length];
 	strcpy_s(this->text, length, text);
     }
-
+    
     ~MenuItem()
     {
 	if (text)
