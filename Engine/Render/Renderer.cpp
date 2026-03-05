@@ -150,14 +150,18 @@ namespace Wanted
 				}
 
 				// 데이터 기록.
-				frame->charInfoArray[index].Char.AsciiChar
-					= command.text[sourceIndex];
-				frame->charInfoArray[index].Attributes
-					= (WORD)command.color;
+                                if (command.text[sourceIndex] != ' ')
+                                {
 
-				// 우선순위 업데이트.
-				frame->sortingOrderArray[index]
-					= command.sortingOrder;
+                                    frame->charInfoArray[index].Char.AsciiChar
+                                        = command.text[sourceIndex];
+                                    frame->charInfoArray[index].Attributes
+                                        = (WORD)command.color;
+
+                                    // 우선순위 업데이트.
+                                    frame->sortingOrderArray[index]
+                                        = command.sortingOrder;
+                                }
 			}
 		}
 
@@ -294,6 +298,8 @@ namespace Wanted
 
 	int Renderer::SubmitFromFile(const std::string& filePath, const Vector2& position, Color color, int sortingOrder)
 	{
+	    //if (!filePath) return position.y;
+
 	    std::ifstream file(filePath);
 	    if (!file.is_open()) {
 		// 파일 열기 실패 시 로그 출력 (이전 단계의 로그 로직 활용)

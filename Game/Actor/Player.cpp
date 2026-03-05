@@ -11,6 +11,7 @@
 #include <iostream>
 
 #include <crtdbg.h>
+
 #ifdef _DEBUG
 #define new new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
 #else
@@ -103,8 +104,8 @@ void Player::Tick(float deltaTime)
 
 void Player::Draw()
 {
-    //super::Draw();
-    Renderer::Get().SubmitFromFile(image, position, color, sortingOrder);
+    super::Draw();
+    //Renderer::Get().SubmitFromFile(image, position, color, sortingOrder);
     if (static_cast<GameLevel*>(GetOwner())->GetIsShowStat()) {
         //PrintI("Level: %d", level, 0, Engine::Get().GetHeight() - 4);
         //PrintI("Hp: %d", GetCurrentHP(), 0, Engine::Get().GetHeight() - 2);

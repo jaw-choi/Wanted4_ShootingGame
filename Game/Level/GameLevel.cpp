@@ -114,7 +114,7 @@ static void DrawBigNumber3x5(int value, const Vector2& pos, Color color, int z, 
 GameLevel::GameLevel()
 {
     // Player 액터 추가.
-    AddNewActor(new Player());
+    //AddNewActor(new Player());
 
     // 적 생성기 추가.
     AddNewActor(new EnemySpawner());
