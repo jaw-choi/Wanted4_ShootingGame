@@ -17,7 +17,8 @@ namespace Wanted
     }
     void QuadTree::Clear()
     {
-        objects.clear();
+        if(objects.size()!=0)
+            objects.clear();
         for (int i = 0; i < 4; i++)
             SafeDelete(nodes[i]);
     }

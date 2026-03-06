@@ -101,6 +101,7 @@
     <ClCompile Include="Actor\PlayerBullet.cpp" />
     <ClCompile Include="Actor\LevelUpOverlay.cpp" />
     <ClCompile Include="Actor\TeamA.cpp" />
+    <ClCompile Include="Actor\TeamSpawner.cpp" />
     <ClCompile Include="Actor\TeamB.cpp" />
     <ClCompile Include="Game\Game.cpp" />
     <ClCompile Include="Level\GameLevel.cpp" />
@@ -120,6 +121,7 @@
     <ClInclude Include="Actor\PlayerBullet.h" />
     <ClInclude Include="Actor\LevelUpOverlay.h" />
     <ClInclude Include="Actor\TeamA.h" />
+    <ClInclude Include="Actor\TeamSpawner.h" />
     <ClInclude Include="Actor\TeamB.h" />
     <ClInclude Include="Game\Game.h" />
     <ClInclude Include="Level\GameLevel.h" />

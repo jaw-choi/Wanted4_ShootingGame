@@ -20,8 +20,8 @@ static const char* enemyType[] =
 {
 	"../Assets/enemy1.txt",
 	"../Assets/enemy2.txt",
-	"../Assets/enemy3.txt",
-	"../Assets/enemy4.txt",
+	"../Assets/teamA.txt",
+	"../Assets/teamB.txt",
 	"../Assets/enemy5.txt",
 };
 

@@ -4,6 +4,7 @@
 #include "Actor/PlayerBullet.h"
 #include "Actor/EnemyBullet.h"
 #include "Actor/EnemySpawner.h"
+#include "Actor/TeamSpawner.h"
 #include "Actor/MouseTester.h"
 #include "Actor/ExpGem.h"
 #include "Actor/LevelUpOverlay.h"
@@ -12,7 +13,8 @@
 #include "Engine/Engine.h"
 #include "Core/Input.h"
 #include "Game/Game.h"
-
+#include "Actor/TeamA.h"
+#include "Level/MenuLevel.h"
 #include <set>
 #include <algorithm>
 #include <iostream>
@@ -115,17 +117,22 @@ GameLevel::GameLevel()
 {
     // Player 액터 추가.
     //AddNewActor(new Player());
+    // TeamA 추가
+
+    
+    AddNewActor(new TeamSpawner());
 
     // 적 생성기 추가.
-    AddNewActor(new EnemySpawner());
+    //AddNewActor(new EnemySpawner());
 
     // Test: 마우스 테스터 추가.
     AddNewActor(new MouseTester());
+
     quadtree = new QuadTree(Rect(0, 0, Engine::Get().GetWidth(), Engine::Get().GetHeight()), 4, 0, 4);
 
     //Renderer::Get().SetCameraOffset(cameraOffset);
 
-    LoadMap("map.txt");
+    LoadMap("../Assets/map.txt");
 }
 
 GameLevel::~GameLevel()
@@ -143,9 +150,9 @@ void GameLevel::BeginPlay()
 
     StartTime();
 
-    PlayerBullet::Prewarm(this, 200);
-    Enemy::Prewarm(this, 5000);
-    ExpGem::Prewarm(this, 150);
+    //PlayerBullet::Prewarm(this, 200);
+    //Enemy::Prewarm(this, 5000);
+    //ExpGem::Prewarm(this, 150);
 
     ProcessAddAndDestroyActors();
 }
@@ -202,7 +209,8 @@ void GameLevel::PrintFPS(float deltaTime)
 void GameLevel::MakeQuadTree()
 {
     //quadtree 형성
-    quadtree->Clear();
+    if(quadtree)
+        quadtree->Clear();
 
     // 액터 필터링.
     for (Actor* const actor : actors)
@@ -323,6 +331,7 @@ void GameLevel::Tick(float deltaTime)
 
     UpdateQuadTreeDebugLines();
 
+
 }
 
 void GameLevel::Draw()
@@ -330,27 +339,27 @@ void GameLevel::Draw()
     DrawBackground();
     super::Draw();
 
-    if (isPlayerDead)
-    {
-        // 플레이어 죽음 메시지 Renderer에 제출.
-        //Renderer::Get().SubmitWorld("!Dead!", playerDeadPosition);
-        Renderer::Get().Submit("!Dead!", playerDeadPosition);
+    //if (isPlayerDead)
+    //{
+    //    // 플레이어 죽음 메시지 Renderer에 제출.
+    //    //Renderer::Get().SubmitWorld("!Dead!", playerDeadPosition);
+    //    Renderer::Get().Submit("!Dead!", playerDeadPosition);
 
-        // 점수 보여주기.
-        ShowScore();
+    //    // 점수 보여주기.
+    //    ShowScore();
 
-        // 화면에 바로 표시.
-        Renderer::Get().PresentImmediately();
+    //    // 화면에 바로 표시.
+    //    Renderer::Get().PresentImmediately();
 
-        // 프로그램 정지.
-        Sleep(2000);
+    //    // 프로그램 정지.
+    //    Sleep(2000);
 
-        isPlayerDead = false;
-        isStarted = false;
-        Game::Get().ToggleMenu();
-        // 게임 종료.
-        //Engine::Get().QuitEngine();
-    }
+    //    isPlayerDead = false;
+    //    isStarted = false;
+    //    Game::Get().ToggleMenu();
+    //    // 게임 종료.
+    //    //Engine::Get().QuitEngine();
+    //}
 
     // 점수 보여주기.
     if(isShowStat)
@@ -915,7 +924,7 @@ void GameLevel::DrawBackground()
 void GameLevel::LoadMap(const char* filename)
 {
     char path[2048] = {};
-    sprintf_s(path, 2048, "../Assets/%s", filename);
+    sprintf_s(path, 2048, "%s", filename);
 
     FILE* file = nullptr;
     fopen_s(&file, path, "rt");

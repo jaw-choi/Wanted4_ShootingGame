@@ -87,6 +87,7 @@ namespace Wanted
 		//BeginPlay();
 		while (!isQuit)
 		{
+
 			// 현재 시간 구하기.
 			QueryPerformanceCounter(&time);
 			currentTime = time.QuadPart;
@@ -124,13 +125,18 @@ namespace Wanted
 				if (nextLevel)
 				{
 					// 기존 레벨 제거.
-					SafeDelete(mainLevel);
+					//SafeDelete(mainLevel);
+				        //두번 지워짐.
 
 					// 전환할 레벨을 메인 레벨로 지정.
 					mainLevel = nextLevel;
 
 					// 포인터 정리.
 					nextLevel = nullptr;
+
+					//initialized 값 false로 초기화 해서 다음 레벨도 mouse input 받기 가능하게 함
+					input->ResetConsoleModeInitialization();
+
 				}
 			}
 		}
@@ -150,6 +156,7 @@ namespace Wanted
 		// 있으면 기존 레벨 제거.
 		// 임시 코드. 레벨 전환할 때는 바로 제거하면 안됨.
 		nextLevel = newLevel;
+		
 		//if (mainLevel)
 		//{
 		//	delete mainLevel;
@@ -158,6 +165,7 @@ namespace Wanted
 		//
 		//// 레벨 설정.
 		//mainLevel = newLevel;
+
 	}
 
 	Engine& Engine::Get()

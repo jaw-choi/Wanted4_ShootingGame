@@ -51,6 +51,8 @@ namespace Wanted
 		// 마우스 커서 위치 확인 함수.
 		inline Vector2 MousePosition() const { return mousePosition; }
 
+		void ResetConsoleModeInitialization();
+
 	private:
 		// 입력 처리 함수.
 		void ProcessInput();
@@ -67,5 +69,7 @@ namespace Wanted
 
 		// 전역적으로 접근하도록 만들기 위한 전역 변수.
 		static Input* instance;
+
+		bool initialized = false;
 	};
 }

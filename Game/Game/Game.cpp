@@ -16,7 +16,7 @@ Game::Game()
     levels.emplace_back(new GameLevel());
 
     // 시작 상태(레벨) 설정.
-    state = State::GamePlay;
+    state = State::Menu;
 
     // 게임 시작 시 활성화할 레벨 설정.
     mainLevel = levels[0];
@@ -30,8 +30,8 @@ Game::~Game()
     // 모든 레벨 삭제.
     for (Level*& level : levels)
     {
-	delete level;
-	level = nullptr;
+	    delete level;
+	    level = nullptr;	
     }
 
     // 배열 정리.
@@ -40,9 +40,11 @@ Game::~Game()
 
 void Game::ToggleMenu()
 {
+
     // 화면 지우기.
     // system은 콘솔 명령어 실행 함수. "cls" 명령어 실행.
     // cls -> clear screen.
+    // 요주의 인물! - handle 값을 변경 해버림 144->135
     system("cls");
 
     // 변경할 인덱스 계산.
@@ -57,11 +59,12 @@ void Game::ToggleMenu()
     if (state == State::Menu)
     {
         delete levels[1];
+
         levels[1] = new GameLevel();
     }
-
     // 메인 레벨 변경.
-    mainLevel = levels[static_cast<int>(state)];
+    //mainLevel = levels[static_cast<int>(state)]
+    SetNewLevel(levels[static_cast<int>(state)]);
 }
 
 Game& Game::Get()

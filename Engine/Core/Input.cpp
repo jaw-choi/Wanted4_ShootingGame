@@ -125,13 +125,16 @@ namespace Wanted
 		//static Input instance;
 		return *instance;
 	}
-
+	void Input::ResetConsoleModeInitialization()
+	{
+	    initialized = false;
+	}
 	void Input::ProcessInput()
 	{
 		// 입력 핸들 얻어오기 & 마우스 입력 활성화 설정.
 		static HANDLE inputHandle = GetStdHandle(STD_INPUT_HANDLE);
-		static bool initialized = false;
 
+		// static BOOL initialized = false;
 		if (!initialized)
 		{
 			// 마우스 이벤트 활성화.

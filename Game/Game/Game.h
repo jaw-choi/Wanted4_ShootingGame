@@ -9,8 +9,8 @@ using namespace Wanted;
 enum class State
 {
     //None = -1,
-    GamePlay = 0,
-    Menu = 1,
+    Menu = 0,
+    GamePlay = 1,
     Length
 };
 
@@ -30,7 +30,7 @@ private:
     std::vector<Level*> levels;
 
     // 현재 활성화된 레벨을 나타내는 상태 변수.
-    State state = State::GamePlay;
+    State state = State::Menu;
 
     // 싱글톤 구현을 위한 정적 변수.
     static Game* instance;
