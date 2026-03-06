@@ -2,7 +2,8 @@
 #include "TeamA.h"
 #include "TeamB.h"
 #include "Core/Input.h"
-
+#include "Level/GameLevel.h"
+#include <iostream>
 TeamSpawner::TeamSpawner()
 {
 }
@@ -59,12 +60,33 @@ void TeamSpawner::Tick(float deltaTime)
         }
         if (isDragging && Input::Get().GetKeyUp(VK_LBUTTON))
         {
+            for (const auto& actor : selectedObject)
+            {
+                actor->SetColor(Color::White);
+            }
+            selectedObject.clear();
             mouseCurr = Input::Get().MousePosition();
 
             dragRect.width = mouseCurr.x - dragStart.x;
             dragRect.height = mouseCurr.y - dragStart.y;
 
             isDragging = false;
+            
+            for (const auto& actor : static_cast<GameLevel*>(GetOwner())->GetActors())
+            {
+                if (dragRect.Contains(actor))
+                {
+                    selectedObject.emplace_back(actor);
+                }                
+            }
+            for (const auto& actor : selectedObject)
+            {
+                actor->SetColor(Color::Blue);
+            }
+            //for(const auto actor : )
+            //if(dragRect.Contains())
+            //    dragRect.con
+            //selectedObject.emplace_back();
         }
 
 
@@ -73,11 +95,12 @@ void TeamSpawner::Tick(float deltaTime)
         //Enemy::Acquire(GetOwner(), image, Input::Get().MousePosition());
         //DrawDragRect(dragRect);
 
+        // 우측키
         if (Input::Get().GetKey(VK_RBUTTON))
         {
             if (!selectedObject.empty())
             {
-                // move selected object to current position with A* Algorithm.
+                // Move selected object to current position with A* Algorithm.
             }
         }
 
@@ -128,7 +151,8 @@ void TeamSpawner::DrawDragRect(const Rect& rect)
     {
         for (int j = topY; j < bottomY; j++)
         {
-            Renderer::Get().Submit("+", Vector2(i, j), color, sorting);
+            if (i == leftX || i == rightX - 1 || j == topY || j == bottomY - 1)
+                Renderer::Get().Submit("+", Vector2(i, j), color, sorting);
         }
     }
 

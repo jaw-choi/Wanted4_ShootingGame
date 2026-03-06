@@ -89,7 +89,7 @@ namespace Wanted
 
 		inline int GetWidth() const { return width; }
 		inline int GetHeight() const { return width; }
-
+		inline void SetColor(Color c) { color = c; }
 	protected:
 		// 이미 BeginPlay 이벤트를 받았는지 여부.
 		bool hasBeganPlay = false;
