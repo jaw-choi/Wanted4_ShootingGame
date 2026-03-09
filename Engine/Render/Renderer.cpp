@@ -128,8 +128,6 @@ namespace Wanted
 		    // 화면 내에 그려질 범위 계산
 		    const int visibleStart = startX < 0 ? 0 : startX;
 		    const int visibleEnd = endX >= screenSize.x ? screenSize.x - 1 : endX;
-
-
 			// 문자열 설정.
 			for (int x = visibleStart; x <= visibleEnd; ++x)
 			{
@@ -230,10 +228,12 @@ namespace Wanted
 	{
 	    if (!text) return;
 
-	    // [핵심 로직] 문자열을 순회하며 줄바꿈(\n) 단위로 쪼개서 Command 생성
-	    // 원본 문자열(text)은 메모리 어딘가에 살아있다고 가정하므로 포인터만 이동시킴.
+	    // [안전] RenderCommand가 포인터만 보관하므로, 문자열 수명을 보장하기 위해 내부 버퍼에 복사
+	    stringBuffer.emplace_back(text);
+	    const char* safeText = stringBuffer.back().c_str();
 
-	    const char* currentPtr = text;
+	    // 문자열을 순회하며 줄바꿈(\n) 단위로 쪼개서 Command 생성
+	    const char* currentPtr = safeText;
 	    int lineOffsetY = 0;
 
 	    while (*currentPtr)
@@ -253,7 +253,7 @@ namespace Wanted
 		if (lineLength > 0)
 		{
 		    RenderCommand command;
-		    command.text = lineStart;       // 해당 줄의 시작 포인터
+		    command.text = lineStart;       // 내부 버퍼에 복사된 문자열 포인터
 		    command.length = lineLength;    // 계산된 길이 (\n 제외)
 		    command.position = Vector2(position.x, position.y + lineOffsetY);
 		    command.color = color;

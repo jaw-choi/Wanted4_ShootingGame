@@ -27,6 +27,7 @@ private:
 
     void DrawDragRect(const Rect& rect);
     void DrawMoveDebug() const;
+    void DrawClosePathDebug() const;
     void StartMoveSelected(const Vector2& target);
     void UpdateMoveSelected(float deltaTime);
     bool isDragging = false;
@@ -39,5 +40,6 @@ private:
     float moveSpeed = 80.0f;
     std::unordered_map<Actor*, Vector2f> movePositions;
     std::unordered_map<Actor*, MovePath> movePaths;
+    
 };
 

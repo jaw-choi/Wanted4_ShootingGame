@@ -128,7 +128,7 @@ GameLevel::GameLevel()
     // Test: 마우스 테스터 추가.
     AddNewActor(new MouseTester());
 
-    quadtree = new QuadTree(Rect(0, 0, Engine::Get().GetWidth(), Engine::Get().GetHeight()), 4, 0, 4);
+    quadtree = new QuadTree(Rect(0, 0, Engine::Get().GetWidth(), Engine::Get().GetHeight()), 2, 0, 4);
 
     //Renderer::Get().SetCameraOffset(cameraOffset);
 

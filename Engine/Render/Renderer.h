@@ -5,6 +5,7 @@
 #include <Windows.h>
 #include <vector>
 #include <string>
+#include <list>
 
 namespace Wanted
 {
@@ -120,7 +121,7 @@ namespace Wanted
 		std::vector<RenderCommand> renderQueue;
 
 		// 이번 프레임 동안 파일에서 읽어온 문자열 저장 공간
-		std::vector<std::string> stringBuffer;
+		std::list<std::string> stringBuffer;
 		// 싱글톤 구현을 위한 정적 변수.
 		static Renderer* instance;
 	};

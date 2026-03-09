@@ -9,6 +9,11 @@
 #include <limits>
 #include <algorithm>
 
+TeamSpawner::TeamSpawner()
+{
+    
+}
+
 
 static bool AabbOverlap(const Vector2& aPos, int aW, int aH, const Vector2& bPos, int bW, int bH)
 {
@@ -62,13 +67,15 @@ static bool IsBlockedByOtherUnit(const GameLevel* level, const Actor* self,
     return false;
 }
 
+static std::vector<std::pair<int,int>> closedPath;
 static std::vector<Vector2> FindPathAStar(
     const GameLevel* level,
     const Actor* self,
     const Vector2& start,
     const Vector2& goal,
     int actorWidth,
-    int actorHeight)
+    int actorHeight,
+    bool sizeOne)
 {
     std::vector<Vector2> empty;
     if (!level || actorWidth <= 0 || actorHeight <= 0)
@@ -162,6 +169,10 @@ static std::vector<Vector2> FindPathAStar(
 
         const int cx = current.index % mapW;
         const int cy = current.index / mapW;
+        if (sizeOne)
+            closedPath.push_back(std::make_pair(cx, cy));
+        
+
 
         const float h = Heuristic(cx, cy);
         if (h < bestH)
@@ -220,9 +231,6 @@ static std::vector<Vector2> FindPathAStar(
 
     std::reverse(path.begin(), path.end());
     return path;
-}
-TeamSpawner::TeamSpawner()
-{
 }
 
 
@@ -321,7 +329,7 @@ void TeamSpawner::Tick(float deltaTime)
         {
             if (!selectedObject.empty())
             {
-                StartMoveSelected(Input::Get().MousePosition());
+                    StartMoveSelected(Input::Get().MousePosition());
             }
         }
 
@@ -339,7 +347,12 @@ void TeamSpawner::Draw()
     if (isDragging)
         DrawDragRect(dragRect);
 
+    DrawClosePathDebug();
     DrawMoveDebug();
+    for (const auto& path : closedPath)
+    {
+        Renderer::Get().Submit("+", Vector2(path.first, path.second), Color::Magenta, 1);
+    }
 }
 
 
@@ -408,13 +421,41 @@ void TeamSpawner::DrawMoveDebug() const
         const int g = static_cast<int>(path.index);
         const int h = std::abs(moveTarget.x - pos.x) + std::abs(moveTarget.y - pos.y);
 
-        char info[64] = {};
-        sprintf_s(info, 64, "G:%d H:%d", g, h);
-        Renderer::Get().Submit(info, Vector2(pos.x, pos.y - 1), Color::Yellow, 10);
+        for (const Vector2& node : path.nodes)
+        {
+            Renderer::Get().SubmitFromFile("../Assets/move.txt", node, Color::Yellow, 1);
+        }
+    }
+}
+
+void TeamSpawner::DrawClosePathDebug() const
+{
+    if (movePaths.empty())
+    {
+        return;
+    }
+
+    for (const auto& entry : movePaths)
+    {
+        Actor* actor = entry.first;
+        if (!actor || !actor->IsActive())
+        {
+            continue;
+        }
+
+        const MovePath& path = entry.second;
+        if (path.nodes.empty())
+        {
+            continue;
+        }
+
+        const Vector2 pos = actor->GetPosition();
+        const int g = static_cast<int>(path.index);
+        const int h = std::abs(moveTarget.x - pos.x) + std::abs(moveTarget.y - pos.y);
 
         for (const Vector2& node : path.nodes)
         {
-            Renderer::Get().Submit(".", node, Color::Green, 1);
+            Renderer::Get().SubmitFromFile("../Assets/move.txt", node, Color::Yellow, 2);
         }
     }
 }
@@ -425,6 +466,7 @@ void TeamSpawner::StartMoveSelected(const Vector2& target)
     isMoveCommand = !selectedObject.empty();
     movePositions.clear();
     movePaths.clear();
+    bool sizeOne = selectedObject.size() == 1;
     GameLevel* gameLevel = dynamic_cast<GameLevel*>(GetOwner());
     for (Actor* actor : selectedObject)
     {
@@ -436,7 +478,7 @@ void TeamSpawner::StartMoveSelected(const Vector2& target)
         MovePath path;
         path.target = moveTarget;
         path.nodes = FindPathAStar(gameLevel, actor, actor->GetPosition(), moveTarget,
-            actor->GetWidth(), actor->GetHeight());
+            actor->GetWidth(), actor->GetHeight(), sizeOne);
         path.index = 0;
         movePaths[actor] = path;
     }
@@ -458,6 +500,7 @@ void TeamSpawner::UpdateMoveSelected(float deltaTime)
     const float step = moveSpeed * deltaTime;
     GameLevel* gameLevel = dynamic_cast<GameLevel*>(GetOwner());
     bool allReached = true;
+    bool sizeOne = selectedObject.size() == 1;
 
     for (Actor* actor : selectedObject)
     {
@@ -472,7 +515,7 @@ void TeamSpawner::UpdateMoveSelected(float deltaTime)
         {
             path.target = moveTarget;
             path.nodes = FindPathAStar(gameLevel, actor, actor->GetPosition(), moveTarget,
-                actor->GetWidth(), actor->GetHeight());
+                actor->GetWidth(), actor->GetHeight(),sizeOne);
             path.index = 0;
         }
 
@@ -501,7 +544,7 @@ void TeamSpawner::UpdateMoveSelected(float deltaTime)
                 IsBlockedByOtherUnit(gameLevel, actor, nextNode, actor->GetWidth(), actor->GetHeight()))
             {
                 path.nodes = FindPathAStar(gameLevel, actor, actor->GetPosition(), moveTarget,
-                    actor->GetWidth(), actor->GetHeight());
+                    actor->GetWidth(), actor->GetHeight(), sizeOne);
                 path.index = 0;
 
                 while (path.index < path.nodes.size() && path.nodes[path.index] == actor->GetPosition())
@@ -541,6 +584,8 @@ void TeamSpawner::UpdateMoveSelected(float deltaTime)
     if (allReached)
     {
         isMoveCommand = false;
+        movePaths.clear();
+        closedPath.clear();
     }
 }
 

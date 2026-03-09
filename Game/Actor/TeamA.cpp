@@ -8,6 +8,7 @@ TeamA::TeamA(const char* image) : super(image)
 {
     SetCollisionLayer(Actor::Layer_TeamA);
     SetCollisionMask(Actor::Layer_All & ~Actor::Layer_Map & ~Actor::Layer_TeamB & ~Actor::Layer_TeamA);
+    sortingOrder = 10;
 }
 
 TeamA::~TeamA()
