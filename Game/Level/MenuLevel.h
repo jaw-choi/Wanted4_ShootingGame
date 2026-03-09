@@ -117,6 +117,7 @@ public:
     State Step();
     State GetState() const { return state; }
     const std::vector<Node*>& GetPath() const { return path; }
+    const std::vector<Vector2>& GetExplored() const { return exploredOrder; }
     void SetOrigin(const Vector2& origin) { renderOrigin = origin; }
 
     // 객체 지향 이론에서 -> 메시지(Message) - 공개 멤버 함수(인터페이스).
@@ -183,6 +184,9 @@ private:
 
     // 그리드 렌더링 시작 위치.
     Vector2 renderOrigin = Vector2::Zero;
+
+    // 탐색 순서(표시용)
+    std::vector<Vector2> exploredOrder;
 };
 
 class MenuLevel : public Level
@@ -218,8 +222,12 @@ private:
     std::vector<std::vector<int>> gridWork;
     bool astarInitialized = false;
     std::vector<Node*> finalPath;
+    std::vector<Vector2> exploredNodes;
     float pathReveal = 0.0f;
     size_t pathRevealCount = 0;
     float pathRevealSpeed = 120.0f; // 노드/초
+    float exploreReveal = 0.0f;
+    size_t exploreRevealCount = 0;
+    float exploreRevealSpeed = 200.0f; // 노드/초
     std::string gridRenderString;
 };
