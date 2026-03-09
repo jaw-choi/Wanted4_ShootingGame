@@ -22,6 +22,10 @@ public:
 	~GameLevel();
 
 	QuadTree* GetQuadtree() const { return quadtree; }
+	bool IsWallAt(int x, int y) const;
+	bool IsBlockedByMap(const Vector2& pos, int width, int height) const;
+	int GetMapWidth() const;
+	int GetMapHeight() const;
 
 	inline void ShowLevelUpUI() { isLevelUpUIVisible  = true; }
 	inline void HideLevelUpUI() { isLevelUpUIVisible = false; }

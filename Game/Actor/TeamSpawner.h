@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "Actor/Actor.h"
 #include "Math/Rect.h"
+#include <unordered_map>
 
 using namespace Wanted;
 
@@ -17,11 +18,26 @@ private:
     void SpawnUnitA(Level* owner, const Vector2& pos);
     void SpawnUnitB(Level* owner, const Vector2& pos);
 private:
+    struct MovePath
+    {
+        std::vector<Vector2> nodes;
+        size_t index = 0;
+        Vector2 target = Vector2::Zero;
+    };
+
     void DrawDragRect(const Rect& rect);
+    void DrawMoveDebug() const;
+    void StartMoveSelected(const Vector2& target);
+    void UpdateMoveSelected(float deltaTime);
     bool isDragging = false;
     Vector2 dragStart;
     Vector2 mouseCurr;
     Rect dragRect;
     std::vector<Actor*> selectedObject;
+    bool isMoveCommand = false;
+    Vector2 moveTarget;
+    float moveSpeed = 80.0f;
+    std::unordered_map<Actor*, Vector2f> movePositions;
+    std::unordered_map<Actor*, MovePath> movePaths;
 };
 

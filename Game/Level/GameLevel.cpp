@@ -921,6 +921,57 @@ void GameLevel::DrawBackground()
     }
 }
 
+bool GameLevel::IsWallAt(int x, int y) const
+{
+    if (y < 0 || y >= (int)worldMap.size())
+    {
+        return true;
+    }
+    if (x < 0 || x >= (int)worldMap[y].size())
+    {
+        return true;
+    }
+    return worldMap[y][x] == '1';
+}
+
+bool GameLevel::IsBlockedByMap(const Vector2& pos, int width, int height) const
+{
+    if (width <= 0 || height <= 0)
+    {
+        return false;
+    }
+
+    for (int y = pos.y; y < pos.y + height; ++y)
+    {
+        for (int x = pos.x; x < pos.x + width; ++x)
+        {
+            if (IsWallAt(x, y))
+            {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+int GameLevel::GetMapWidth() const
+{
+    int maxWidth = 0;
+    for (const std::string& row : worldMap)
+    {
+        if ((int)row.size() > maxWidth)
+        {
+            maxWidth = (int)row.size();
+        }
+    }
+    return maxWidth;
+}
+
+int GameLevel::GetMapHeight() const
+{
+    return (int)worldMap.size();
+}
+
 void GameLevel::LoadMap(const char* filename)
 {
     char path[2048] = {};

@@ -55,9 +55,10 @@ namespace Wanted
             return;
         }
 
-        // 문자열 복사.
-        this->image = new char[width + 1];
-        strcpy_s(this->image, width + 1, image);
+        // 파일 경로 문자열 복사 (이미지 폭이 아니라 경로 길이 기준)
+        const int pathLen = static_cast<int>(strlen(image));
+        this->image = new char[pathLen + 1];
+        strcpy_s(this->image, pathLen + 1, image);
     }
 
     Actor::~Actor()
@@ -108,6 +109,10 @@ namespace Wanted
 
     bool Actor::TestIntersect(const Actor* const other)
     {
+        if (!CanCollideWith(other))
+        {
+            return false;
+        }
         // AABB (Axis Aligned Bounding Box)
         // padding 포함 + 최소 1x1 보장
 
@@ -151,16 +156,49 @@ namespace Wanted
         return true;
     }
 
+    bool Actor::CanCollideWith(const Actor* other) const
+    {
+        if (!other)
+        {
+            return false;
+        }
+
+        if (collisionLayer == Layer_None || other->collisionLayer == Layer_None)
+        {
+            return false;
+        }
+
+        if ((collisionMask & other->collisionLayer) == 0)
+        {
+            return false;
+        }
+
+        if ((other->collisionMask & collisionLayer) == 0)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
 
     void Actor::ChangeImage(const char* newImage)
     {
         // 기존 메모리 해제.
         SafeDeleteArray(image);
 
-        // 새로운 문자열 복사.
-        width = static_cast<int>(strlen(newImage));
-        image = new char[width + 1];
-        strcpy_s(image, width + 1, newImage);
+        if (!GetAsciiSizeFromFile(newImage, width, height))
+        {
+            width = 0;
+            height = 0;
+            image = nullptr;
+            return;
+        }
+
+        // 파일 경로 문자열 복사 (이미지 폭이 아니라 경로 길이 기준)
+        const int pathLen = static_cast<int>(strlen(newImage));
+        image = new char[pathLen + 1];
+        strcpy_s(image, pathLen + 1, newImage);
     }
 
     void Actor::SetPosition(const Vector2& newPosition)

@@ -5,6 +5,7 @@
 #include "Math/Color.h"
 #include "Engine/Engine.h"
 #include "Render/Renderer.h"
+#include <cstdint>
 
 namespace Wanted
 {
@@ -17,6 +18,14 @@ namespace Wanted
 		RTTI_DECLARATIONS(Actor, RTTI)
 
 	public:
+		using CollisionMask = uint32_t;
+		static constexpr CollisionMask Layer_None = 0u;
+		static constexpr CollisionMask Layer_Default = 1u << 0;
+		static constexpr CollisionMask Layer_Map = 1u << 1;
+		static constexpr CollisionMask Layer_TeamA = 1u << 2;
+		static constexpr CollisionMask Layer_TeamB = 1u << 3;
+		static constexpr CollisionMask Layer_All = 0xFFFFFFFFu;
+
 		Actor(
 			const char* image = "",
 			const Vector2& position = Vector2::Zero,
@@ -40,6 +49,14 @@ namespace Wanted
 
 		// 충돌 여부 확인 함수.
 		bool TestIntersect(const Actor* const other);
+		bool CanCollideWith(const Actor* other) const;
+
+		inline void SetCollisionLayer(CollisionMask layer) { collisionLayer = layer; }
+		inline void SetCollisionMask(CollisionMask mask) { collisionMask = mask; }
+		inline void AddCollisionMask(CollisionMask mask) { collisionMask |= mask; }
+		inline void RemoveCollisionMask(CollisionMask mask) { collisionMask &= ~mask; }
+		inline CollisionMask GetCollisionLayer() const { return collisionLayer; }
+		inline CollisionMask GetCollisionMask() const { return collisionMask; }
 
 		// 액터의 이미지 값 변경 함수.
 		void ChangeImage(const char* newImage);
@@ -88,7 +105,7 @@ namespace Wanted
 		inline int GetSortingOrder() const { return sortingOrder; }
 
 		inline int GetWidth() const { return width; }
-		inline int GetHeight() const { return width; }
+		inline int GetHeight() const { return height; }
 		inline void SetColor(Color c) { color = c; }
 	protected:
 		// 이미 BeginPlay 이벤트를 받았는지 여부.
@@ -118,5 +135,9 @@ namespace Wanted
 
 		// 위치.
 		Vector2 position;
+
+		// 충돌 필터링 (레이어/마스크)
+		CollisionMask collisionLayer = Layer_Default;
+		CollisionMask collisionMask = Layer_All;
 	};
 }
