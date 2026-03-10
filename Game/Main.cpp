@@ -26,9 +26,10 @@ void GenerateMapFile(const std::string& filename, int width, int height) {
     std::ofstream mapFile(filename);
     if (!mapFile.is_open()) return;
 
-    // 3x3 캐릭터 기준으로 통로 폭은 4 이상 확보
+    // 3x3 캐릭터 기준으로 통로 폭은 넉넉하게 확보하고,
+    // DFS 미로 뒤에 추가 연결을 열어 막다른 길이를 줄인다.
     const int border = 1;
-    const int corridor = 9; // 통로 폭 (>= 4)
+    const int corridor = 11; // 통로 폭 (>= 4)
     const int wall = 1;     // 벽 두께
     const int step = corridor + wall;
 
@@ -114,6 +115,7 @@ void GenerateMapFile(const std::string& filename, int width, int height) {
 
     std::random_device rd;
     std::mt19937 rng(rd());
+    std::uniform_real_distribution<float> probability(0.0f, 1.0f);
 
     std::stack<std::pair<int, int>> st;
     st.push({ 0, 0 });
@@ -148,6 +150,24 @@ void GenerateMapFile(const std::string& filename, int width, int height) {
         carveCell(nx, ny);
         visited[ny][nx] = true;
         st.push({ nx, ny });
+    }
+
+    // 트리 형태 미로에 추가 연결을 열어 우회 경로를 늘린다.
+    const float extraConnectionChance = 0.35f;
+    for (int cy = 0; cy < cellsY; ++cy)
+    {
+        for (int cx = 0; cx < cellsX; ++cx)
+        {
+            if (cx + 1 < cellsX && probability(rng) < extraConnectionChance)
+            {
+                carveWallBetween(cx, cy, cx + 1, cy);
+            }
+
+            if (cy + 1 < cellsY && probability(rng) < extraConnectionChance)
+            {
+                carveWallBetween(cx, cy, cx, cy + 1);
+            }
+        }
     }
 
     // 파일 쓰기

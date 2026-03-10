@@ -18,6 +18,7 @@ TeamSpawner::TeamSpawner()
 }
 
 static constexpr int kMaxReplanAttempts = 3;
+static constexpr int kMaxPathRequestsPerFrame = 3;
 static constexpr float kReplanCooldownSeconds = 0.15f;
 static constexpr int kTrailStep = 3;
 static constexpr int kTrailLength = 40;
@@ -502,6 +503,7 @@ void TeamSpawner::Tick(float deltaTime)
 
         // Todo: 나중에 teamB가 주변에 있으면 공격하는 기능 추가
 
+        ProcessPathRequests();
         UpdateMoveSelected(deltaTime);
 }
 
@@ -592,48 +594,35 @@ void TeamSpawner::StartMoveSelected(const Vector2& target)
         return;
     }
 
-    bool sizeOne = selectedObject.size() == 1;
     GameLevel* gameLevel = dynamic_cast<GameLevel*>(GetOwner());
     if (!gameLevel)
     {
         return;
     }
 
-    BuildUnitOccupancy(gameLevel);
-
-    std::unordered_map<Actor*, Vector2f> nextMovePositions;
-    std::unordered_map<Actor*, MovePath> nextMovePaths;
+    pendingPathRequests.clear();
     bool hasTrackedActor = false;
-    bool hasImmediatePath = false;
 
     for (Actor*& actor : selectedObject)
     {
-        if (!actor || !actor->IsActive())
+        if (!actor || !actor->IsActive() || !IsControllableUnit(actor))
         {
             continue;
         }
 
-        nextMovePositions[actor] = Vector2f(actor->GetPosition());
-        MovePath path;
+        hasTrackedActor = true;
+        movePositions[actor] = Vector2f(actor->GetPosition());
+
+        MovePath& path = movePaths[actor];
         path.target = target;
         path.replanAttempts = 0;
         path.replanCooldown = 0.0f;
-        path.nodes = FindPathAStar(gameLevel, actor, actor->GetPosition(), target,
-            actor->GetWidth(), actor->GetHeight(), sizeOne, &unitOccupancy, unitGridW, unitGridH);
-
+        path.waitingForPath = false;
         if (path.nodes.empty())
         {
-            path.replanAttempts = 1;
-            path.replanCooldown = 0.0f;
+            path.index = 0;
         }
-        else
-        {
-            hasImmediatePath = true;
-        }
-
-        path.index = 0;
-        nextMovePaths[actor] = path;
-        hasTrackedActor = true;
+        QueuePathRequest(actor, target);
     }
 
     if (!hasTrackedActor)
@@ -641,15 +630,8 @@ void TeamSpawner::StartMoveSelected(const Vector2& target)
         return;
     }
 
-    if (!hasImmediatePath)
-    {
-        return;
-    }
-
     moveTarget = target;
     isMoveCommand = true;
-    movePositions = std::move(nextMovePositions);
-    movePaths = std::move(nextMovePaths);
 }
 
 void TeamSpawner::UpdateMoveSelected(float deltaTime)
@@ -668,63 +650,50 @@ void TeamSpawner::UpdateMoveSelected(float deltaTime)
     const float step = moveSpeed * deltaTime;
     GameLevel* gameLevel = dynamic_cast<GameLevel*>(GetOwner());
     bool allReached = true;
-    bool sizeOne = selectedObject.size() == 1;
-
-    BuildUnitOccupancy(gameLevel);
 
     for (Actor*& actor : selectedObject)
     {
-        if (!actor || !actor->IsActive())
+        if (!actor || !actor->IsActive() || !IsControllableUnit(actor))
         {
             continue;
         }
 
-        Vector2f& currF = movePositions[actor];
-        MovePath& path = movePaths[actor];
+        auto posIt = movePositions.find(actor);
+        auto pathIt = movePaths.find(actor);
+        if (posIt == movePositions.end() || pathIt == movePaths.end())
+        {
+            continue;
+        }
+
+        Vector2f& currF = posIt->second;
+        MovePath& path = pathIt->second;
         if (path.replanCooldown > 0.0f)
         {
             path.replanCooldown = max(0.0f, path.replanCooldown - deltaTime);
         }
 
-        if (path.target != moveTarget || path.nodes.empty())
+        if (path.target != moveTarget)
         {
-            if (path.target != moveTarget)
-            {
-                path.target = moveTarget;
-                path.replanAttempts = 0;
-                path.replanCooldown = 0.0f;
-            }
+            path.target = moveTarget;
+            path.replanAttempts = 0;
+            path.replanCooldown = 0.0f;
+            QueuePathRequest(actor, moveTarget);
+        }
 
-            if (path.nodes.empty())
-            {
-                if (path.replanAttempts >= kMaxReplanAttempts)
-                {
-                    continue;
-                }
-
-                allReached = false;
-                if (path.replanCooldown > 0.0f)
-                {
-                    continue;
-                }
-
-                path.replanAttempts++;
-                path.replanCooldown = kReplanCooldownSeconds;
-                path.nodes = FindPathAStar(gameLevel, actor, actor->GetPosition(), moveTarget,
-                    actor->GetWidth(), actor->GetHeight(), sizeOne, &unitOccupancy, unitGridW, unitGridH);
-                path.index = 0;
-
-                if (path.nodes.empty())
-                {
-                    continue;
-                }
-
-                path.replanAttempts = 0;
-            }
+        if (path.waitingForPath)
+        {
+            allReached = false;
         }
 
         if (path.nodes.empty())
         {
+            if (!path.waitingForPath &&
+                path.replanAttempts < kMaxReplanAttempts &&
+                path.replanCooldown <= 0.0f)
+            {
+                QueuePathRequest(actor, path.target);
+                allReached = false;
+            }
             continue;
         }
 
@@ -749,36 +718,16 @@ void TeamSpawner::UpdateMoveSelected(float deltaTime)
             if (blockedByMap || blockedByUnit)
             {
                 allReached = false;
-                if (path.replanAttempts < kMaxReplanAttempts && path.replanCooldown <= 0.0f)
+                if (!path.waitingForPath &&
+                    path.replanAttempts < kMaxReplanAttempts &&
+                    path.replanCooldown <= 0.0f)
                 {
-                    path.replanAttempts++;
                     path.replanCooldown = kReplanCooldownSeconds;
-                    path.nodes = FindPathAStar(gameLevel, actor, actor->GetPosition(), moveTarget,
-                        actor->GetWidth(), actor->GetHeight(), sizeOne, &unitOccupancy, unitGridW, unitGridH);
+                    path.nodes.clear();
                     path.index = 0;
-
-                    while (path.index < path.nodes.size() && path.nodes[path.index] == actor->GetPosition())
-                    {
-                        path.index++;
-                    }
-
-                    if (path.index >= path.nodes.size())
-                    {
-                        continue;
-                    }
-
-                    nextNode = path.nodes[path.index];
-
-                    if (gameLevel->IsBlockedByMap(nextNode, actor->GetWidth(), actor->GetHeight()) ||
-                        IsBlockedByUnitGrid(actor, nextNode, actor->GetWidth(), actor->GetHeight()))
-                    {
-                        continue;
-                    }
+                    QueuePathRequest(actor, moveTarget);
                 }
-                else
-                {
-                    continue;
-                }
+                continue;
             }
         }
 
@@ -791,7 +740,6 @@ void TeamSpawner::UpdateMoveSelected(float deltaTime)
             currF = nextF;
             actor->SetPosition(nextNode);
             path.index++;
-            path.replanAttempts = 0;
         }
         else
         {
@@ -807,8 +755,105 @@ void TeamSpawner::UpdateMoveSelected(float deltaTime)
     {
         isMoveCommand = false;
         movePaths.clear();
+        movePositions.clear();
+        pendingPathRequests.clear();
         closedPath.clear();
     }
+}
+
+void TeamSpawner::ProcessPathRequests()
+{
+    if (pendingPathRequests.empty())
+    {
+        return;
+    }
+
+    GameLevel* gameLevel = dynamic_cast<GameLevel*>(GetOwner());
+    if (!gameLevel)
+    {
+        pendingPathRequests.clear();
+        return;
+    }
+
+    BuildUnitOccupancy(gameLevel);
+    const bool sizeOne = selectedObject.size() == 1;
+    int processedCount = 0;
+
+    while (!pendingPathRequests.empty() && processedCount < kMaxPathRequestsPerFrame)
+    {
+        PathRequest request = pendingPathRequests.front();
+        pendingPathRequests.pop_front();
+        processedCount++;
+
+        if (!request.actor || !request.actor->IsActive())
+        {
+            continue;
+        }
+
+        auto pathIt = movePaths.find(request.actor);
+        if (pathIt == movePaths.end())
+        {
+            continue;
+        }
+
+        MovePath& path = pathIt->second;
+        if (path.requestToken != request.requestToken || path.target != request.target)
+        {
+            continue;
+        }
+
+        path.waitingForPath = false;
+        path.replanAttempts++;
+
+        std::vector<Vector2> nodes = FindPathAStar(gameLevel, request.actor, request.actor->GetPosition(),
+            request.target, request.actor->GetWidth(), request.actor->GetHeight(),
+            sizeOne, &unitOccupancy, unitGridW, unitGridH);
+
+        if (nodes.empty())
+        {
+            path.nodes.clear();
+            path.index = 0;
+
+            if (path.replanAttempts >= kMaxReplanAttempts)
+            {
+                path.replanCooldown = 0.0f;
+            }
+            else
+            {
+                path.replanCooldown = kReplanCooldownSeconds;
+            }
+            continue;
+        }
+
+        path.nodes = std::move(nodes);
+        path.index = 0;
+        path.replanAttempts = 0;
+        path.replanCooldown = 0.0f;
+    }
+}
+
+void TeamSpawner::QueuePathRequest(Actor* actor, const Vector2& target)
+{
+    if (!actor || !actor->IsActive())
+    {
+        return;
+    }
+
+    MovePath& path = movePaths[actor];
+    if (path.waitingForPath)
+    {
+        return;
+    }
+
+    path.target = target;
+    path.waitingForPath = true;
+    path.requestToken++;
+
+    PathRequest request;
+    request.actor = actor;
+    request.target = target;
+    request.requestToken = path.requestToken;
+    pendingPathRequests.push_back(request);
 }
 
 void TeamSpawner::BuildUnitOccupancy(const GameLevel* level)
