@@ -8,6 +8,8 @@
 #include <queue>
 #include <limits>
 #include <algorithm>
+#include <fstream>
+#include <string>
 
 
 TeamSpawner::TeamSpawner()
@@ -41,6 +43,29 @@ static bool AabbOverlap(const Vector2& aPos, int aW, int aH, const Vector2& bPos
     return true;
 }
 
+static Rect NormalizeRect(const Rect& rect)
+{
+    Rect normalized = rect;
+    if (normalized.width < 0)
+    {
+        normalized.x += normalized.width;
+        normalized.width = -normalized.width;
+    }
+
+    if (normalized.height < 0)
+    {
+        normalized.y += normalized.height;
+        normalized.height = -normalized.height;
+    }
+
+    return normalized;
+}
+
+static bool IsControllableUnit(const Actor* actor)
+{
+    return actor && (actor->As<TeamA>() != nullptr || actor->As<TeamB>() != nullptr);
+}
+
 static bool IsBlockedByOtherUnit(const GameLevel* level, const Actor* self,
     const Vector2& pos, int width, int height)
 {
@@ -56,8 +81,7 @@ static bool IsBlockedByOtherUnit(const GameLevel* level, const Actor* self,
             continue;
         }
 
-        const bool otherIsUnit = other->As<TeamA>() != nullptr || other->As<TeamB>() != nullptr;
-        if (!otherIsUnit)
+        if (!IsControllableUnit(other))
         {
             continue;
         }
@@ -71,6 +95,71 @@ static bool IsBlockedByOtherUnit(const GameLevel* level, const Actor* self,
     
 
     return false;
+}
+
+static bool GetAsciiSizeFromFile(const char* path, int& outW, int& outH)
+{
+    outW = 0;
+    outH = 0;
+
+    if (!path)
+    {
+        return false;
+    }
+
+    std::ifstream in(path);
+    if (!in.is_open())
+    {
+        return false;
+    }
+
+    std::string line;
+    if (!std::getline(in, line))
+    {
+        return false;
+    }
+
+    if (!line.empty() && line.back() == '\r')
+    {
+        line.pop_back();
+    }
+
+    outW = static_cast<int>(line.size());
+    outH = 1;
+
+    while (std::getline(in, line))
+    {
+        outH++;
+    }
+
+    return outW > 0 && outH > 0;
+}
+
+static bool CanPlaceUnitAt(const GameLevel* level, const Vector2& pos, const char* imagePath)
+{
+    if (!level || !imagePath)
+    {
+        return false;
+    }
+
+    int width = 0;
+    int height = 0;
+    if (!GetAsciiSizeFromFile(imagePath, width, height))
+    {
+        return false;
+    }
+
+    if (level->IsBlockedByMap(pos, width, height))
+    {
+        return false;
+    }
+
+    if (IsBlockedByOtherUnit(level, nullptr, pos, width, height))
+    {
+        return false;
+    }
+
+    return true;
 }
 
 static std::vector<std::pair<int,int>> closedPath;
@@ -197,6 +286,11 @@ static std::vector<Vector2> FindPathAStar(
         return false;
     };
 
+    if (IsBlocked(goalX, goalY))
+    {
+        return empty;
+    }
+
     struct Node
     {
         int index;
@@ -212,8 +306,7 @@ static std::vector<Vector2> FindPathAStar(
     gScore[startIndex] = 0.0f;
     open.push({ startIndex, Heuristic(startX, startY) });
 
-    int bestIndex = startIndex;
-    float bestH = Heuristic(startX, startY);
+    bool reachedGoal = (startIndex == goalIndex);
 
     const int dirs[4][2] = { {1,0},{-1,0},{0,1},{0,-1} };
 
@@ -233,19 +326,10 @@ static std::vector<Vector2> FindPathAStar(
         const int cy = current.index / mapW;
         if (sizeOne)
             closedPath.push_back(std::make_pair(cx, cy));
-        
-
-
-        const float h = Heuristic(cx, cy);
-        if (h < bestH)
-        {
-            bestH = h;
-            bestIndex = current.index;
-        }
 
         if (current.index == goalIndex)
         {
-            bestIndex = goalIndex;
+            reachedGoal = true;
             break;
         }
 
@@ -276,8 +360,17 @@ static std::vector<Vector2> FindPathAStar(
         }
     }
 
+    if (!reachedGoal)
+    {
+        if (sizeOne)
+        {
+            closedPath.clear();
+        }
+        return empty;
+    }
+
     std::vector<Vector2> path;
-    int trace = bestIndex;
+    int trace = goalIndex;
     if (trace == -1)
     {
         return empty;
@@ -359,10 +452,21 @@ void TeamSpawner::Tick(float deltaTime)
             dragRect.height = mouseCurr.y - dragStart.y;
 
             isDragging = false;
+            const Rect normalizedRect = NormalizeRect(dragRect);
             
             for (const auto& actor : static_cast<GameLevel*>(GetOwner())->GetActors())
             {
-                if (dragRect.Contains(actor))
+                if (!actor || !actor->IsActive())
+                {
+                    continue;
+                }
+
+                if (!IsControllableUnit(actor))
+                {
+                    continue;
+                }
+
+                if (normalizedRect.Contains(actor))
                 {
                     selectedObject.emplace_back(actor);
                 }                
@@ -422,30 +526,13 @@ void TeamSpawner::DrawDragRect(const Rect& rect)
 {
 
     Color color = Color::White;
+    const Rect normalized = NormalizeRect(rect);
 
     const int sorting = 0;
-    int leftX, rightX, topY, bottomY;
-    if (rect.width < 0)
-    {
-        leftX = rect.x + rect.width;
-        rightX = rect.x;
-    }
-    else
-    {
-        leftX = rect.x;
-        rightX = rect.x + rect.width;
-    }
-
-    if (rect.height < 0)
-    {
-        topY = rect.y + rect.height;
-        bottomY = rect.y;
-    }
-    else
-    {
-        topY = rect.y;
-        bottomY = rect.y + rect.height;
-    }
+    const int leftX = normalized.x;
+    const int rightX = normalized.x + normalized.width;
+    const int topY = normalized.y;
+    const int bottomY = normalized.y + normalized.height;
 
     for (int i = leftX; i < rightX; i++)
     {
@@ -500,29 +587,69 @@ void TeamSpawner::DrawMoveDebug() const
 
 void TeamSpawner::StartMoveSelected(const Vector2& target)
 {
-    moveTarget = target;
-    isMoveCommand = !selectedObject.empty();
-    movePositions.clear();
-    movePaths.clear();
+    if (selectedObject.empty())
+    {
+        return;
+    }
+
     bool sizeOne = selectedObject.size() == 1;
     GameLevel* gameLevel = dynamic_cast<GameLevel*>(GetOwner());
+    if (!gameLevel)
+    {
+        return;
+    }
+
     BuildUnitOccupancy(gameLevel);
+
+    std::unordered_map<Actor*, Vector2f> nextMovePositions;
+    std::unordered_map<Actor*, MovePath> nextMovePaths;
+    bool hasTrackedActor = false;
+    bool hasImmediatePath = false;
+
     for (Actor*& actor : selectedObject)
     {
         if (!actor || !actor->IsActive())
         {
             continue;
         }
-        movePositions[actor] = Vector2f(actor->GetPosition());
+
+        nextMovePositions[actor] = Vector2f(actor->GetPosition());
         MovePath path;
-        path.target = moveTarget;
+        path.target = target;
         path.replanAttempts = 0;
         path.replanCooldown = 0.0f;
-        path.nodes = FindPathAStar(gameLevel, actor, actor->GetPosition(), moveTarget,
+        path.nodes = FindPathAStar(gameLevel, actor, actor->GetPosition(), target,
             actor->GetWidth(), actor->GetHeight(), sizeOne, &unitOccupancy, unitGridW, unitGridH);
+
+        if (path.nodes.empty())
+        {
+            path.replanAttempts = 1;
+            path.replanCooldown = 0.0f;
+        }
+        else
+        {
+            hasImmediatePath = true;
+        }
+
         path.index = 0;
-        movePaths[actor] = path;
+        nextMovePaths[actor] = path;
+        hasTrackedActor = true;
     }
+
+    if (!hasTrackedActor)
+    {
+        return;
+    }
+
+    if (!hasImmediatePath)
+    {
+        return;
+    }
+
+    moveTarget = target;
+    isMoveCommand = true;
+    movePositions = std::move(nextMovePositions);
+    movePaths = std::move(nextMovePaths);
 }
 
 void TeamSpawner::UpdateMoveSelected(float deltaTime)
@@ -561,17 +688,43 @@ void TeamSpawner::UpdateMoveSelected(float deltaTime)
 
         if (path.target != moveTarget || path.nodes.empty())
         {
-            path.target = moveTarget;
-            path.replanAttempts = 0;
-            path.replanCooldown = 0.0f;
-            path.nodes = FindPathAStar(gameLevel, actor, actor->GetPosition(), moveTarget,
-                actor->GetWidth(), actor->GetHeight(), sizeOne, &unitOccupancy, unitGridW, unitGridH);
-            path.index = 0;
+            if (path.target != moveTarget)
+            {
+                path.target = moveTarget;
+                path.replanAttempts = 0;
+                path.replanCooldown = 0.0f;
+            }
+
+            if (path.nodes.empty())
+            {
+                if (path.replanAttempts >= kMaxReplanAttempts)
+                {
+                    continue;
+                }
+
+                allReached = false;
+                if (path.replanCooldown > 0.0f)
+                {
+                    continue;
+                }
+
+                path.replanAttempts++;
+                path.replanCooldown = kReplanCooldownSeconds;
+                path.nodes = FindPathAStar(gameLevel, actor, actor->GetPosition(), moveTarget,
+                    actor->GetWidth(), actor->GetHeight(), sizeOne, &unitOccupancy, unitGridW, unitGridH);
+                path.index = 0;
+
+                if (path.nodes.empty())
+                {
+                    continue;
+                }
+
+                path.replanAttempts = 0;
+            }
         }
 
         if (path.nodes.empty())
         {
-            allReached = false;
             continue;
         }
 
@@ -695,8 +848,7 @@ void TeamSpawner::BuildUnitOccupancy(const GameLevel* level)
             continue;
         }
 
-        const bool isUnit = other->As<TeamA>() != nullptr || other->As<TeamB>() != nullptr;
-        if (!isUnit)
+        if (!IsControllableUnit(other))
         {
             continue;
         }
@@ -732,10 +884,20 @@ bool TeamSpawner::IsBlockedByUnitGrid(const Actor* self, const Vector2& pos, int
 
 void TeamSpawner::SpawnUnitA(Level* owner, const Vector2& pos)
 {
+    GameLevel* gameLevel = dynamic_cast<GameLevel*>(owner);
+    if (!CanPlaceUnitAt(gameLevel, pos, "../Assets/teamA.txt"))
+    {
+        return;
+    }
     TeamA::Acquire(owner,"../Assets/teamA.txt", pos);
 }
 
 void TeamSpawner::SpawnUnitB(Level* owner, const Vector2& pos)
 {
+    GameLevel* gameLevel = dynamic_cast<GameLevel*>(owner);
+    if (!CanPlaceUnitAt(gameLevel, pos, "../Assets/teamB.txt"))
+    {
+        return;
+    }
     TeamB::Acquire(owner, "../Assets/teamB.txt", pos);
 }
