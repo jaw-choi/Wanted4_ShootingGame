@@ -17,5 +17,12 @@ namespace Wanted
 		Magenta = Red + Blue,
 		Cyan = Green + Blue,
 		Yellow = Red + Green,
+		BackgroundRed = BACKGROUND_RED,
+		BackgroundGreen = BACKGROUND_GREEN,
+		BackgroundBlue = BACKGROUND_BLUE,
+		BackgroundMagenta = BackgroundRed + BackgroundBlue,
+		BackgroundCyan = BackgroundGreen + BackgroundBlue,
+		BackgroundYellow = BackgroundRed + BackgroundGreen,
+		BackgroundWhite = BackgroundRed + BackgroundGreen + BackgroundBlue
 	};
 }

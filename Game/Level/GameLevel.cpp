@@ -14,6 +14,7 @@
 #include "Core/Input.h"
 #include "Game/Game.h"
 #include "Actor/TeamA.h"
+#include "Actor/TeamB.h"
 #include "Level/MenuLevel.h"
 #include <set>
 #include <algorithm>
@@ -111,6 +112,16 @@ static void DrawBigNumber3x5(int value, const Vector2& pos, Color color, int z, 
             );
         }
     }
+}
+
+static bool IsTeamAActor(const Actor* actor)
+{
+    return actor && actor->As<TeamA>() != nullptr;
+}
+
+static bool IsTeamBActor(const Actor* actor)
+{
+    return actor && actor->As<TeamB>() != nullptr;
 }
 
 GameLevel::GameLevel()
@@ -326,9 +337,9 @@ void GameLevel::Tick(float deltaTime)
         timeString,
         Vector2(25, Engine::Get().GetHeight() - 3), Color::Red, 10
     );
-    // QuadTree 생성.
-    MakeQuadTree();
 
+    MakeQuadTree();
+    ProcessCollisionTeamAAndTeamBQuadTree();
     UpdateQuadTreeDebugLines();
 
 
@@ -639,6 +650,62 @@ void GameLevel::ProcessCollisionPlayerAndEnemyQuadTree()
             }
         }
     }
+}
+
+bool GameLevel::ProcessCollisionTeamAAndTeamBQuadTree()
+{
+    if (!quadtree)
+    {
+        return false;
+    }
+
+    std::vector<Actor*> teamAActors;
+    for (Actor* const actor : actors)
+    {
+        if (!actor || !actor->IsActive())
+        {
+            continue;
+        }
+
+        if (IsTeamAActor(actor))
+        {
+            teamAActors.emplace_back(actor);
+        }
+    }
+
+    if (teamAActors.empty())
+    {
+        return false;
+    }
+
+    bool foundCollision = false;
+
+    for (Actor* const teamA : teamAActors)
+    {
+        std::vector<Actor*> nearbyActors;
+        quadtree->Query(nearbyActors, teamA);
+
+        for (Actor* const candidate : nearbyActors)
+        {
+            if (!candidate || !candidate->IsActive())
+            {
+                continue;
+            }
+
+            if (!IsTeamBActor(candidate))
+            {
+                continue;
+            }
+
+            if (teamA->TestIntersect(candidate))
+            {
+                foundCollision = true;
+                // Team unit combat/response can be attached here later.
+            }
+        }
+    }
+
+    return foundCollision;
 }
 
 void GameLevel::ProcessCollisionPlayerAndExpGemQuadTree()

@@ -5,6 +5,8 @@
 
 using namespace Wanted;
 
+class GameLevel;
+
 class TeamSpawner : public Actor
 {
         RTTI_DECLARATIONS(TeamSpawner, Actor)
@@ -23,13 +25,16 @@ private:
         std::vector<Vector2> nodes;
         size_t index = 0;
         Vector2 target = Vector2::Zero;
+        int replanAttempts = 0;
+        float replanCooldown = 0.0f;
     };
 
     void DrawDragRect(const Rect& rect);
     void DrawMoveDebug() const;
-    void DrawClosePathDebug() const;
     void StartMoveSelected(const Vector2& target);
     void UpdateMoveSelected(float deltaTime);
+    void BuildUnitOccupancy(const GameLevel* level);
+    bool IsBlockedByUnitGrid(const Actor* self, const Vector2& pos, int width, int height) const;
     bool isDragging = false;
     Vector2 dragStart;
     Vector2 mouseCurr;
@@ -40,6 +45,10 @@ private:
     float moveSpeed = 80.0f;
     std::unordered_map<Actor*, Vector2f> movePositions;
     std::unordered_map<Actor*, MovePath> movePaths;
+    std::vector<const Actor*> unitOccupancy;
+    int unitGridW = 0;
+    int unitGridH = 0;
+    float trailAnimTime = 0.0f;
     
 };
 

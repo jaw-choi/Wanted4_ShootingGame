@@ -51,6 +51,7 @@ private:
 	void ProcessCollisionPlayerAndEnemyQuadTree();
 	void ProcessCollisionPlayerAndExpGemQuadTree();
 	void ProcessCollisionPlayerAndEnemyBullet();
+	bool ProcessCollisionTeamAAndTeamBQuadTree();
 	void ProcessAstarAlgorithmPlayerAndEnemy();
 
 	// 점수 보여주는 함수.

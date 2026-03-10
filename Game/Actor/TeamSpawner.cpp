@@ -9,11 +9,17 @@
 #include <limits>
 #include <algorithm>
 
+
 TeamSpawner::TeamSpawner()
 {
     
 }
 
+static constexpr int kMaxReplanAttempts = 3;
+static constexpr float kReplanCooldownSeconds = 0.15f;
+static constexpr int kTrailStep = 3;
+static constexpr int kTrailLength = 40;
+static constexpr float kTrailAnimInterval = 0.08f;
 
 static bool AabbOverlap(const Vector2& aPos, int aW, int aH, const Vector2& bPos, int bW, int bH)
 {
@@ -50,7 +56,7 @@ static bool IsBlockedByOtherUnit(const GameLevel* level, const Actor* self,
             continue;
         }
 
-        const bool otherIsUnit = other->IsTypeOf<TeamA>() || other->IsTypeOf<TeamB>();
+        const bool otherIsUnit = other->As<TeamA>() != nullptr || other->As<TeamB>() != nullptr;
         if (!otherIsUnit)
         {
             continue;
@@ -68,6 +74,47 @@ static bool IsBlockedByOtherUnit(const GameLevel* level, const Actor* self,
 }
 
 static std::vector<std::pair<int,int>> closedPath;
+
+static bool IsBlockedByUnitGrid(
+    const std::vector<const Actor*>& unitGrid,
+    int gridW,
+    int gridH,
+    const Actor* self,
+    const Vector2& pos,
+    int width,
+    int height)
+{
+    if (unitGrid.empty() || gridW <= 0 || gridH <= 0 || width <= 0 || height <= 0)
+    {
+        return false;
+    }
+
+    const int left =   max(0, pos.x);
+    const int top =    max(0, pos.y);
+    const int right =  min(gridW, pos.x + width);
+    const int bottom = min(gridH, pos.y + height);
+
+    if (right <= left || bottom <= top)
+    {
+        return false;
+    }
+
+    for (int y = top; y < bottom; ++y)
+    {
+        const int row = y * gridW;
+        for (int x = left; x < right; ++x)
+        {
+            const Actor* occupant = unitGrid[row + x];
+            if (occupant && occupant != self)
+            {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
 static std::vector<Vector2> FindPathAStar(
     const GameLevel* level,
     const Actor* self,
@@ -75,7 +122,10 @@ static std::vector<Vector2> FindPathAStar(
     const Vector2& goal,
     int actorWidth,
     int actorHeight,
-    bool sizeOne)
+    bool sizeOne,
+    const std::vector<const Actor*>* unitGrid,
+    int gridW,
+    int gridH)
 {
     std::vector<Vector2> empty;
     if (!level || actorWidth <= 0 || actorHeight <= 0)
@@ -105,6 +155,11 @@ static std::vector<Vector2> FindPathAStar(
     const int startIndex = startY * mapW + startX;
     const int goalIndex = goalY * mapW + goalX;
 
+    if (sizeOne)
+    {
+        closedPath.clear();
+    }
+
     const float INF = 10000.f;
     const int total = mapW * mapH;
 
@@ -128,7 +183,14 @@ static std::vector<Vector2> FindPathAStar(
         {
             return true;
         }
-        if (IsBlockedByOtherUnit(level, self, pos, actorWidth, actorHeight))
+        if (unitGrid && !unitGrid->empty())
+        {
+            if (IsBlockedByUnitGrid(*unitGrid, gridW, gridH, self, pos, actorWidth, actorHeight))
+            {
+                return true;
+            }
+        }
+        else if (IsBlockedByOtherUnit(level, self, pos, actorWidth, actorHeight))
         {
             return true;
         }
@@ -242,6 +304,7 @@ void TeamSpawner::Tick(float deltaTime)
             return;
         }
         super::Tick(deltaTime);
+        trailAnimTime += deltaTime;
 
         if (Input::Get().GetKeyDown(VK_ESCAPE))
         {
@@ -347,7 +410,6 @@ void TeamSpawner::Draw()
     if (isDragging)
         DrawDragRect(dragRect);
 
-    DrawClosePathDebug();
     DrawMoveDebug();
     for (const auto& path : closedPath)
     {
@@ -403,37 +465,9 @@ void TeamSpawner::DrawMoveDebug() const
         return;
     }
 
-    for (const auto& entry : movePaths)
-    {
-        Actor* actor = entry.first;
-        if (!actor || !actor->IsActive())
-        {
-            continue;
-        }
-
-        const MovePath& path = entry.second;
-        if (path.nodes.empty())
-        {
-            continue;
-        }
-
-        const Vector2 pos = actor->GetPosition();
-        const int g = static_cast<int>(path.index);
-        const int h = std::abs(moveTarget.x - pos.x) + std::abs(moveTarget.y - pos.y);
-
-        for (const Vector2& node : path.nodes)
-        {
-            Renderer::Get().SubmitFromFile("../Assets/move.txt", node, Color::Yellow, 1);
-        }
-    }
-}
-
-void TeamSpawner::DrawClosePathDebug() const
-{
-    if (movePaths.empty())
-    {
-        return;
-    }
+    const int phase = (kTrailStep > 0)
+        ? static_cast<int>(trailAnimTime / kTrailAnimInterval) % kTrailStep
+        : 0;
 
     for (const auto& entry : movePaths)
     {
@@ -449,13 +483,17 @@ void TeamSpawner::DrawClosePathDebug() const
             continue;
         }
 
-        const Vector2 pos = actor->GetPosition();
-        const int g = static_cast<int>(path.index);
-        const int h = std::abs(moveTarget.x - pos.x) + std::abs(moveTarget.y - pos.y);
-
-        for (const Vector2& node : path.nodes)
+        if (path.index >= path.nodes.size())
         {
-            Renderer::Get().SubmitFromFile("../Assets/move.txt", node, Color::Yellow, 2);
+            continue;
+        }
+
+        const size_t start = path.index + static_cast<size_t>(phase);
+        const size_t end = min(path.nodes.size(), start + static_cast<size_t>(kTrailLength));
+
+        for (size_t i = start; i < end; i += static_cast<size_t>(kTrailStep))
+        {
+            Renderer::Get().SubmitFromFile("../Assets/move.txt", path.nodes[i], Color::Yellow, 2);
         }
     }
 }
@@ -468,7 +506,8 @@ void TeamSpawner::StartMoveSelected(const Vector2& target)
     movePaths.clear();
     bool sizeOne = selectedObject.size() == 1;
     GameLevel* gameLevel = dynamic_cast<GameLevel*>(GetOwner());
-    for (Actor* actor : selectedObject)
+    BuildUnitOccupancy(gameLevel);
+    for (Actor*& actor : selectedObject)
     {
         if (!actor || !actor->IsActive())
         {
@@ -477,8 +516,10 @@ void TeamSpawner::StartMoveSelected(const Vector2& target)
         movePositions[actor] = Vector2f(actor->GetPosition());
         MovePath path;
         path.target = moveTarget;
+        path.replanAttempts = 0;
+        path.replanCooldown = 0.0f;
         path.nodes = FindPathAStar(gameLevel, actor, actor->GetPosition(), moveTarget,
-            actor->GetWidth(), actor->GetHeight(), sizeOne);
+            actor->GetWidth(), actor->GetHeight(), sizeOne, &unitOccupancy, unitGridW, unitGridH);
         path.index = 0;
         movePaths[actor] = path;
     }
@@ -502,7 +543,9 @@ void TeamSpawner::UpdateMoveSelected(float deltaTime)
     bool allReached = true;
     bool sizeOne = selectedObject.size() == 1;
 
-    for (Actor* actor : selectedObject)
+    BuildUnitOccupancy(gameLevel);
+
+    for (Actor*& actor : selectedObject)
     {
         if (!actor || !actor->IsActive())
         {
@@ -511,11 +554,18 @@ void TeamSpawner::UpdateMoveSelected(float deltaTime)
 
         Vector2f& currF = movePositions[actor];
         MovePath& path = movePaths[actor];
+        if (path.replanCooldown > 0.0f)
+        {
+            path.replanCooldown = max(0.0f, path.replanCooldown - deltaTime);
+        }
+
         if (path.target != moveTarget || path.nodes.empty())
         {
             path.target = moveTarget;
+            path.replanAttempts = 0;
+            path.replanCooldown = 0.0f;
             path.nodes = FindPathAStar(gameLevel, actor, actor->GetPosition(), moveTarget,
-                actor->GetWidth(), actor->GetHeight(),sizeOne);
+                actor->GetWidth(), actor->GetHeight(), sizeOne, &unitOccupancy, unitGridW, unitGridH);
             path.index = 0;
         }
 
@@ -540,24 +590,42 @@ void TeamSpawner::UpdateMoveSelected(float deltaTime)
         Vector2 nextNode = path.nodes[path.index];
         if (gameLevel)
         {
-            if (gameLevel->IsBlockedByMap(nextNode, actor->GetWidth(), actor->GetHeight()) ||
-                IsBlockedByOtherUnit(gameLevel, actor, nextNode, actor->GetWidth(), actor->GetHeight()))
+            const bool blockedByMap = gameLevel->IsBlockedByMap(nextNode, actor->GetWidth(), actor->GetHeight());
+            const bool blockedByUnit = IsBlockedByUnitGrid(actor, nextNode, actor->GetWidth(), actor->GetHeight());
+
+            if (blockedByMap || blockedByUnit)
             {
-                path.nodes = FindPathAStar(gameLevel, actor, actor->GetPosition(), moveTarget,
-                    actor->GetWidth(), actor->GetHeight(), sizeOne);
-                path.index = 0;
-
-                while (path.index < path.nodes.size() && path.nodes[path.index] == actor->GetPosition())
+                allReached = false;
+                if (path.replanAttempts < kMaxReplanAttempts && path.replanCooldown <= 0.0f)
                 {
-                    path.index++;
-                }
+                    path.replanAttempts++;
+                    path.replanCooldown = kReplanCooldownSeconds;
+                    path.nodes = FindPathAStar(gameLevel, actor, actor->GetPosition(), moveTarget,
+                        actor->GetWidth(), actor->GetHeight(), sizeOne, &unitOccupancy, unitGridW, unitGridH);
+                    path.index = 0;
 
-                if (path.index >= path.nodes.size())
+                    while (path.index < path.nodes.size() && path.nodes[path.index] == actor->GetPosition())
+                    {
+                        path.index++;
+                    }
+
+                    if (path.index >= path.nodes.size())
+                    {
+                        continue;
+                    }
+
+                    nextNode = path.nodes[path.index];
+
+                    if (gameLevel->IsBlockedByMap(nextNode, actor->GetWidth(), actor->GetHeight()) ||
+                        IsBlockedByUnitGrid(actor, nextNode, actor->GetWidth(), actor->GetHeight()))
+                    {
+                        continue;
+                    }
+                }
+                else
                 {
                     continue;
                 }
-
-                nextNode = path.nodes[path.index];
             }
         }
 
@@ -570,6 +638,7 @@ void TeamSpawner::UpdateMoveSelected(float deltaTime)
             currF = nextF;
             actor->SetPosition(nextNode);
             path.index++;
+            path.replanAttempts = 0;
         }
         else
         {
@@ -587,6 +656,77 @@ void TeamSpawner::UpdateMoveSelected(float deltaTime)
         movePaths.clear();
         closedPath.clear();
     }
+}
+
+void TeamSpawner::BuildUnitOccupancy(const GameLevel* level)
+{
+    if (!level)
+    {
+        unitGridW = 0;
+        unitGridH = 0;
+        unitOccupancy.clear();
+        return;
+    }
+
+    unitGridW = level->GetMapWidth();
+    unitGridH = level->GetMapHeight();
+    if (unitGridW <= 0 || unitGridH <= 0)
+    {
+        unitGridW = 0;
+        unitGridH = 0;
+        unitOccupancy.clear();
+        return;
+    }
+
+    const size_t total = static_cast<size_t>(unitGridW) * static_cast<size_t>(unitGridH);
+    if (unitOccupancy.size() != total)
+    {
+        unitOccupancy.assign(total, nullptr);
+    }
+    else
+    {
+        std::fill(unitOccupancy.begin(), unitOccupancy.end(), nullptr);
+    }
+
+    for (Actor* other : level->GetActors())
+    {
+        if (!other || !other->IsActive())
+        {
+            continue;
+        }
+
+        const bool isUnit = other->As<TeamA>() != nullptr || other->As<TeamB>() != nullptr;
+        if (!isUnit)
+        {
+            continue;
+        }
+
+        const int ow = other->GetWidth();
+        const int oh = other->GetHeight();
+        if (ow <= 0 || oh <= 0)
+        {
+            continue;
+        }
+
+        const int left = max(0, other->GetPosition().x);
+        const int top = max(0, other->GetPosition().y);
+        const int right = min(unitGridW, other->GetPosition().x + ow);
+        const int bottom = min(unitGridH, other->GetPosition().y + oh);
+
+        for (int y = top; y < bottom; ++y)
+        {
+            const int row = y * unitGridW;
+            for (int x = left; x < right; ++x)
+            {
+                unitOccupancy[row + x] = other;
+            }
+        }
+    }
+}
+
+bool TeamSpawner::IsBlockedByUnitGrid(const Actor* self, const Vector2& pos, int width, int height) const
+{
+    return ::IsBlockedByUnitGrid(unitOccupancy, unitGridW, unitGridH, self, pos, width, height);
 }
 
 
