@@ -205,6 +205,59 @@ static bool IsBlockedByUnitGrid(
     return false;
 }
 
+static void SyncActorOccupancyOnGrid(
+    std::vector<const Actor*>& unitGrid,
+    int gridW,
+    int gridH,
+    const Actor* actor,
+    const Vector2& oldPos,
+    const Vector2& newPos,
+    int width,
+    int height)
+{
+    if (!actor || unitGrid.empty() || gridW <= 0 || gridH <= 0 || width <= 0 || height <= 0)
+    {
+        return;
+    }
+
+    if (oldPos == newPos)
+    {
+        return;
+    }
+
+    const int oldLeft = max(0, oldPos.x);
+    const int oldTop = max(0, oldPos.y);
+    const int oldRight = min(gridW, oldPos.x + width);
+    const int oldBottom = min(gridH, oldPos.y + height);
+
+    for (int y = oldTop; y < oldBottom; ++y)
+    {
+        const int row = y * gridW;
+        for (int x = oldLeft; x < oldRight; ++x)
+        {
+            const int index = row + x;
+            if (unitGrid[index] == actor)
+            {
+                unitGrid[index] = nullptr;
+            }
+        }
+    }
+
+    const int newLeft = max(0, newPos.x);
+    const int newTop = max(0, newPos.y);
+    const int newRight = min(gridW, newPos.x + width);
+    const int newBottom = min(gridH, newPos.y + height);
+
+    for (int y = newTop; y < newBottom; ++y)
+    {
+        const int row = y * gridW;
+        for (int x = newLeft; x < newRight; ++x)
+        {
+            unitGrid[row + x] = actor;
+        }
+    }
+}
+
 static std::vector<Vector2> FindPathAStar(
     const GameLevel* level,
     const Actor* self,
@@ -649,6 +702,10 @@ void TeamSpawner::UpdateMoveSelected(float deltaTime)
 
     const float step = moveSpeed * deltaTime;
     GameLevel* gameLevel = dynamic_cast<GameLevel*>(GetOwner());
+    if (gameLevel)
+    {
+        BuildUnitOccupancy(gameLevel);
+    }
     bool allReached = true;
 
     for (Actor*& actor : selectedObject)
@@ -667,6 +724,7 @@ void TeamSpawner::UpdateMoveSelected(float deltaTime)
 
         Vector2f& currF = posIt->second;
         MovePath& path = pathIt->second;
+        const Vector2 previousPos = actor->GetPosition();
         if (path.replanCooldown > 0.0f)
         {
             path.replanCooldown = max(0.0f, path.replanCooldown - deltaTime);
@@ -748,6 +806,20 @@ void TeamSpawner::UpdateMoveSelected(float deltaTime)
                 static_cast<int>(std::round(currF.x)),
                 static_cast<int>(std::round(currF.y))
             ));
+        }
+
+        if (gameLevel)
+        {
+            SyncActorOccupancyOnGrid(
+                unitOccupancy,
+                unitGridW,
+                unitGridH,
+                actor,
+                previousPos,
+                actor->GetPosition(),
+                actor->GetWidth(),
+                actor->GetHeight()
+            );
         }
     }
 

@@ -124,6 +124,11 @@ static bool IsTeamBActor(const Actor* actor)
     return actor && actor->As<TeamB>() != nullptr;
 }
 
+static bool IsTeamUnitActor(const Actor* actor)
+{
+    return IsTeamAActor(actor) || IsTeamBActor(actor);
+}
+
 GameLevel::GameLevel()
 {
     // Player 액터 추가.
@@ -659,7 +664,7 @@ bool GameLevel::ProcessCollisionTeamAAndTeamBQuadTree()
         return false;
     }
 
-    std::vector<Actor*> teamAActors;
+    std::vector<Actor*> teamActors;
     for (Actor* const actor : actors)
     {
         if (!actor || !actor->IsActive())
@@ -667,23 +672,23 @@ bool GameLevel::ProcessCollisionTeamAAndTeamBQuadTree()
             continue;
         }
 
-        if (IsTeamAActor(actor))
+        if (IsTeamUnitActor(actor))
         {
-            teamAActors.emplace_back(actor);
+            teamActors.emplace_back(actor);
         }
     }
 
-    if (teamAActors.empty())
+    if (teamActors.empty())
     {
         return false;
     }
 
     bool foundCollision = false;
 
-    for (Actor* const teamA : teamAActors)
+    for (Actor* const teamUnit : teamActors)
     {
         std::vector<Actor*> nearbyActors;
-        quadtree->Query(nearbyActors, teamA);
+        quadtree->Query(nearbyActors, teamUnit);
 
         for (Actor* const candidate : nearbyActors)
         {
@@ -692,12 +697,23 @@ bool GameLevel::ProcessCollisionTeamAAndTeamBQuadTree()
                 continue;
             }
 
-            if (!IsTeamBActor(candidate))
+            if (!IsTeamUnitActor(candidate))
             {
                 continue;
             }
 
-            if (teamA->TestIntersect(candidate))
+            if (candidate == teamUnit)
+            {
+                continue;
+            }
+
+            // 동일 페어 중복 체크를 줄임.
+            if (candidate < teamUnit)
+            {
+                continue;
+            }
+
+            if (teamUnit->TestIntersect(candidate))
             {
                 foundCollision = true;
                 // Team unit combat/response can be attached here later.
