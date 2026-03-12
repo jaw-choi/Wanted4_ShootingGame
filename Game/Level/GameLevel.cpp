@@ -261,6 +261,7 @@ void GameLevel::UpdateQuadTreeDebugLines()
 }
 void GameLevel::Tick(float deltaTime)
 {
+
     //super::Tick(deltaTime);
 
     //Debug Active Button

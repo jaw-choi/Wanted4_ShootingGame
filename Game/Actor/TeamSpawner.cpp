@@ -400,10 +400,11 @@ void TeamSpawner::Tick(float deltaTime)
         super::Tick(deltaTime);
         trailAnimTime += deltaTime;
 
-        if (Input::Get().GetKeyDown(VK_ESCAPE))
-        {
-            QuitGame();
-        }
+        //if (Input::Get().GetKeyDown(VK_ESCAPE))
+        //{
+        //    QuitGame();
+
+        //}
 
         if (Input::Get().GetKeyDown('A') || Input::Get().GetKeyDown('a'))
         {

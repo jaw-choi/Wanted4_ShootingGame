@@ -98,14 +98,14 @@ void MenuLevel::Tick(float deltaTime)
 	items[currentIndex]->onSelected();
     }
 
- //   if (Input::Get().GetKeyDown(VK_ESCAPE))
- //   {
-	//// 메뉴 토글.
-	//Game::Get().ToggleMenu();
+    if (Input::Get().GetKeyDown(VK_ESCAPE))
+    {
+	// 메뉴 토글.
+	Game::Get().ToggleMenu();
 
-	//// 인덱스 초기화.
-	//currentIndex = 0;
- //   }
+	// 인덱스 초기화.
+	currentIndex = 0;
+    }
 
     InitAStarIfNeeded();
     if (!exploredNodes.empty() && exploreRevealCount < exploredNodes.size())
